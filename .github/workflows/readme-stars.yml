@@ -2,9 +2,9 @@ name: Update readme ⭐️ progress
 
 on:
     # !Please set a different minute than 51 if you enable this!
-     schedule:
+    schedule:
         - cron: "08 */6 * * *" # Every 6 hours
-    orkflow_dispatch:
+    workflow_dispatch:
 
 jobs:
     update-readme:
