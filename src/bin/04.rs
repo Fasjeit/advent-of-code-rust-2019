@@ -62,6 +62,7 @@ pub fn part_two(input: &str) -> Option<u64> {
     Some(res)
 }
 
+#[allow(clippy::comparison_chain)]
 fn check_digits_part1(digits: Vec<u32>) -> bool {
     let mut have_double = false;
     for d in 1..digits.len() {
@@ -80,6 +81,7 @@ fn check_digits_part1(digits: Vec<u32>) -> bool {
     have_double
 }
 
+#[allow(clippy::comparison_chain)]
 fn check_digits_part2(digits: Vec<u32>) -> bool {
     let mut have_double = false;
 
@@ -129,12 +131,12 @@ mod tests {
     #[test]
     fn test_part_two_single_number_1() {
         let result = check_digits_part2(vec![1, 1, 4, 4, 4, 5]);
-        assert_eq!(result, true);
+        assert!(result);
     }
 
     #[test]
     fn test_part_two_single_number_2() {
         let result = check_digits_part2(vec![0, 1, 4, 4, 4, 5]);
-        assert_eq!(result, false);
+        assert!(!result);
     }
 }
