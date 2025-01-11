@@ -1,2 +1,13 @@
 1 - 1
 2 - 2
+3 - 1
+4 - 1
+
+1 - just code it
+2 - easy one with a twist
+3 - ok, not a hard but takes some time
+3.8 - ok, but used some minor help or advise (algo to use, cache to implement, etc)
+4 - harder one, no help
+4.3 - harder one, no help, ton of time
+4.5 - harder one, need some help or advise
+5 - hard, ton of time and need a help, maybe just some other code gets adapted
