@@ -25,11 +25,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 }
 
 fn compute_fuel(mass: &u64) -> u64 {
-    if mass / 3 > 2 {
-        (mass / 3) - 2
-    } else {
-        0
-    }
+    (mass / 3).saturating_sub(2)
 }
 
 fn compute_fuel_iterative(mass: &u64) -> u64 {
