@@ -85,8 +85,12 @@ pub fn create_amplifiers_part_2(memory: &str, phase_inputs: &str) -> i64 {
         .permutations(phase_inputs.len())
         .unique()
     {
-        println!("{:?}", perm);
+        //tmp
+        //perm = [&9, &8, &7, &6, &5].to_vec();
 
+        //println!("{:?}", perm);
+
+        // Create machines
         let mut amps: [Machine; 5] = [
             Machine::new(memory.clone()),
             Machine::new(memory.clone()),
@@ -95,29 +99,38 @@ pub fn create_amplifiers_part_2(memory: &str, phase_inputs: &str) -> i64 {
             Machine::new(memory.clone()),
         ];
 
-        let mut exited = false;
+        // set initial phase inputs.
+        for index in 0..amps.len() {
+            amps[index].input = [*perm[index]].to_vec();
+        }
+
+        let mut machines_active = 5;
         let mut input_value = 0;
 
-        while !exited {
-            println!("New amp cycle!");
+        while machines_active != 0 {
+            //println!("New amp cycle!");
             for amp in &mut amps {
-                amp.input = [*perm[0], input_value].to_vec();
+                amp.input.push(input_value);
                 let result = amp.execute();
                 input_value = *amp.output.last().unwrap();
 
                 if let Ok(result) = result {
                     if result != -1 {
                         // -1 is waiting for input
-                        exited = true;
-                        break;
+                        machines_active -= 1;
+                        //println!("Machine exited! Active machines: [{machines_active}]");
                     } else {
-                        println!("Machine is waiting input!");
+                        //println!("Machine is waiting input!");
                     }
                 }
+
+                //println!("iteration output : [{input_value}]");
             }
         }
 
         let res = input_value;
+
+        //println!("res: [{res}]");
 
         max = if res > max { res } else { max };
     }
@@ -699,11 +712,19 @@ mod tests {
         assert_eq!(result, Some(65210));
     }
 
-    //#[test]
-    fn test_part_two() {
+    #[test]
+    fn test_part_two_1() {
         let result = part_two(&advent_of_code::template::read_file_part(
             "examples", DAY, 4,
         ));
         assert_eq!(result, Some(139629729));
+    }
+
+    #[test]
+    fn test_part_two_2() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 5,
+        ));
+        assert_eq!(result, Some(18216));
     }
 }
