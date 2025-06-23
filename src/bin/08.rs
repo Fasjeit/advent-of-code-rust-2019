@@ -104,7 +104,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 
     let _ = img.save("decoded_image_day8_part2.bmp");
 
-    None
+    Some(1)
 }
 
 // fn decode_pixel(data: Vec<u32>, x: usize, y: usize) {
@@ -145,7 +145,7 @@ mod tests {
             "examples", DAY, 4,
         ));
         // see image file output
-        assert_eq!(result, None);
+        assert_eq!(result, Some(1));
     }
 
     #[test]
@@ -154,6 +154,6 @@ mod tests {
             "examples", DAY, 5,
         ));
         // see image file output
-        assert_eq!(result, None);
+        assert_eq!(result, Some(1));
     }
 }
