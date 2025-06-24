@@ -1,7 +1,8 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use advent_of_code::advent_stdlib::{parse_row_input_as_data_array, Index, Size};
 use fixed::types::I20F12;
+use itertools::Itertools;
 
 advent_of_code::solution!(10);
 
@@ -11,8 +12,16 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let position = find_best_position_and_fire(input);
-    Some((100 * position.x + position.y) as u64)
+    // idea - just sort each quadrant asteroids based on angle (k ration)
+    // as it basically give as angles (or just tan?)
+
+    // 1 - from negative-inf to 0
+    // 4 - from 0 to inf
+    // 3 - from inf to 0
+    // 2 from 0 to negative-inf
+
+    let res = find_best_position_and_fire(input, 200);
+    Some(res.x as u64 * 100 + res.y as u64)
 }
 
 fn find_best_position(input: &str) -> (Index, u32) {
@@ -27,7 +36,7 @@ fn find_best_position(input: &str) -> (Index, u32) {
     find_best_position_matrix(&matrix)
 }
 
-fn find_best_position_and_fire(input: &str) -> Index {
+fn find_best_position_and_fire(input: &str, desired: u32) -> Index {
     let (data, size) = parse_row_input_as_data_array::<char>(input);
     let data_cells: Vec<AsteroidMapCell> = data.into_iter().map(AsteroidMapCell::from).collect();
 
@@ -36,10 +45,8 @@ fn find_best_position_and_fire(input: &str) -> Index {
         data: data_cells.clone(),
     };
 
-    let (position, _) = find_best_position_matrix(&matrix);
-    fire_for_position(&mut matrix, position);
-
-    todo!()
+    let (pos, _) = find_best_position_matrix(&matrix);
+    fire_for_position(&mut matrix, Index { x: pos.x, y: pos.y }, desired)
 }
 
 fn find_best_position_matrix(matrix: &SpaceMatrix<AsteroidMapCell>) -> (Index, u32) {
@@ -123,10 +130,11 @@ fn test_for_position(matrix: &SpaceMatrix<AsteroidMapCell>, position: Index) -> 
     result
 }
 
-fn fire_for_position(matrix: &mut SpaceMatrix<AsteroidMapCell>, position: Index) -> Index {
-    //let mut index200 = Index { x: 0, y: 0 };
-    let mut iterations_index = 0;
-
+fn fire_for_position(
+    matrix: &mut SpaceMatrix<AsteroidMapCell>,
+    position: Index,
+    desired: u32,
+) -> Index {
     matrix[position.y][position.x].source = true;
 
     let fth_quadrant_size = Size {
@@ -142,73 +150,94 @@ fn fire_for_position(matrix: &mut SpaceMatrix<AsteroidMapCell>, position: Index)
     //.....
     //...#.
 
+    // Strictly clockwise.
+
     //println!("\n Checking 1");
 
-    let mut blocked_1 = HashSet::<I20F12>::new();
-    for dx in 0..fth_quadrant_size.x as i32 {
-        for dy in -(position.y as i32)..1 {
-            fire_quadrant(
-                dx,
-                dy,
-                &position,
-                matrix,
-                &mut blocked_1,
-                &mut iterations_index,
-            );
+    let mut total_shot_list: Vec<Index> = Vec::new();
+
+    while total_shot_list.len() < desired as usize {
+        let mut blocked_1 = HashSet::<I20F12>::new();
+        let mut shots_list_1: HashMap<I20F12, Index> = HashMap::new();
+
+        for dy in (-(position.y as i32)..0).rev() {
+            for dx in 0..fth_quadrant_size.x as i32 {
+                fire_quadrant(dx, dy, &position, matrix, &mut blocked_1, &mut shots_list_1);
+            }
+        }
+
+        let sorted_keys = shots_list_1.keys().sorted();
+        for key in sorted_keys {
+            let index = shots_list_1.get(key).unwrap();
+            total_shot_list.push(*index);
+            //println!("{key}");
+        }
+
+        // matrix.print();
+        //dbg!(&total_shot_list);
+
+        //println!("\n Checking 4");
+
+        let mut blocked_4 = HashSet::<I20F12>::new();
+        let mut shots_list_4: HashMap<I20F12, Index> = HashMap::new();
+        for dy in 0..fth_quadrant_size.y as i32 {
+            for dx in 0..fth_quadrant_size.x as i32 {
+                fire_quadrant(dx, dy, &position, matrix, &mut blocked_4, &mut shots_list_4);
+            }
+        }
+        let sorted_keys = shots_list_4.keys().sorted();
+        for key in sorted_keys {
+            let index = shots_list_4.get(key).unwrap();
+            total_shot_list.push(*index);
+            //println!("{key}");
+        }
+
+        //println!("\n Checking 3");
+
+        let mut blocked_3 = HashSet::<I20F12>::new();
+        let mut shots_list_3: HashMap<I20F12, Index> = HashMap::new();
+        for dy in 0..fth_quadrant_size.y as i32 {
+            for dx in (-(position.x as i32)..0).rev() {
+                fire_quadrant(dx, dy, &position, matrix, &mut blocked_3, &mut shots_list_3);
+            }
+        }
+
+        let sorted_keys = shots_list_3.keys().sorted();
+        for key in sorted_keys {
+            let index = shots_list_3.get(key).unwrap();
+            total_shot_list.push(*index);
+            //println!("{key}");
+        }
+
+        //println!("\n Checking 2");
+
+        let mut blocked_2 = HashSet::<I20F12>::new();
+        let mut shots_list_2: HashMap<I20F12, Index> = HashMap::new();
+        for dy in (-(position.y as i32)..0).rev() {
+            for dx in (-(position.x as i32)..0).rev() {
+                fire_quadrant(dx, dy, &position, matrix, &mut blocked_2, &mut shots_list_2);
+            }
+        }
+
+        let sorted_keys = shots_list_2.keys().sorted();
+        for key in sorted_keys {
+            let index = shots_list_2.get(key).unwrap();
+            total_shot_list.push(*index);
+            //println!("{key}");
         }
     }
 
-    //println!("\n Checking 2");
+    for (index, pos) in total_shot_list.iter().enumerate() {
+        //dbg!(pos);
+        //dbg!(index + 1);
+        matrix[pos.y][pos.x].cost = (index + 1) as u64;
 
-    let mut blocked_2 = HashSet::<I20F12>::new();
-    for dy in (-(position.y as i32)..0).rev() {
-        for dx in (-(position.x as i32)..0).rev() {
-            fire_quadrant(
-                dx,
-                dy,
-                &position,
-                matrix,
-                &mut blocked_2,
-                &mut iterations_index,
-            );
-        }
+        //matrix.print();
     }
 
-    //println!("\n Checking 3");
+    //matrix.print();
 
-    let mut blocked_3 = HashSet::<I20F12>::new();
-    for dy in 0..fth_quadrant_size.y as i32 {
-        for dx in (-(position.x as i32)..0).rev() {
-            fire_quadrant(
-                dx,
-                dy,
-                &position,
-                matrix,
-                &mut blocked_3,
-                &mut iterations_index,
-            );
-        }
-    }
-
-    //println!("\n Checking 4");
-
-    let mut blocked_4 = HashSet::<I20F12>::new();
-    for dy in 0..fth_quadrant_size.y as i32 {
-        for dx in 0..fth_quadrant_size.x as i32 {
-            fire_quadrant(
-                dx,
-                dy,
-                &position,
-                matrix,
-                &mut blocked_4,
-                &mut iterations_index,
-            );
-        }
-    }
-
-    matrix.print();
-
-    todo!()
+    total_shot_list[desired as usize - 1]
 }
 
 fn check_quadrant(
@@ -257,14 +286,17 @@ fn fire_quadrant(
     position: &Index,
     matrix: &mut SpaceMatrix<AsteroidMapCell>,
     blocked: &mut HashSet<I20F12>,
-    shots_left: &mut u32,
-) -> Option<Index> {
+    shots_list: &mut HashMap<I20F12, Index>,
+) {
     if dx == 0 && dy == 0 {
-        return None;
+        return;
     }
 
-    let inf = I20F12::from_num(999);
-
+    let inf = if dy < 0 {
+        I20F12::from_num(-999)
+    } else {
+        I20F12::from_num(999)
+    };
     let x = (dx + position.x as i32) as usize;
     let y = (dy + position.y as i32) as usize;
     //println!("[x:{x} y:{y}]");
@@ -283,12 +315,10 @@ fn fire_quadrant(
         } else {
             //println!("blocking [{:?}]", &view);
             blocked.insert(view);
-            matrix[y][x].cost = *shots_left as u64; // evaporating!
-            *shots_left += 1;
-            return Some(Index { x, y });
+            matrix[y][x].cost = 1; // evaporating!
+            shots_list.entry(view).or_insert(Index { x, y });
         }
     }
-    None
 }
 
 #[derive(Debug, Clone)]
@@ -318,7 +348,7 @@ impl SpaceMatrix<AsteroidMapCell> {
             for x in 0..self.size.x {
                 let mut ch = '.';
                 if self[y][x].cost > 9 {
-                    ch = '@'
+                    ch = char::from_digit((self[y][x].cost as u32 - 1) % 9 + 1, 10).unwrap()
                 } else if self[y][x].cost != 0 {
                     ch = char::from_digit(self[y][x].cost as u32, 10).unwrap()
                 } else if self[y][x].source {
@@ -524,18 +554,41 @@ mod tests {
         assert_eq!(result, Some(210));
     }
 
-    //#[test]
-    // fn test_part_two() {
-    //     let (data, size) = parse_row_input_as_data_array::<char>(
-    //         &advent_of_code::template::read_file_part("examples", DAY, 8),
-    //     );
-    //     let data_cells: Vec<AsteroidMapCell> =
-    //         data.into_iter().map(AsteroidMapCell::from).collect();
-    //     let matrix = SpaceMatrix {
-    //         size,
-    //         data: data_cells.clone(),
-    //     };
-    //     //let res = fire_for_position(&mut matrix, Index { x: 8, y: 3 });
-    //     //assert_eq!(res, 210);
-    // }
+    #[test]
+    fn test_part_two() {
+        let (data, size) = parse_row_input_as_data_array::<char>(
+            &advent_of_code::template::read_file_part("examples", DAY, 8),
+        );
+        let data_cells: Vec<AsteroidMapCell> =
+            data.into_iter().map(AsteroidMapCell::from).collect();
+        let mut matrix = SpaceMatrix {
+            size,
+            data: data_cells.clone(),
+        };
+        let res = fire_for_position(&mut matrix, Index { x: 8, y: 3 }, 36);
+        assert_eq!(res, Index { x: 14, y: 3 });
+    }
+
+    #[test]
+    fn test_part_two_big() {
+        let (data, size) = parse_row_input_as_data_array::<char>(
+            &advent_of_code::template::read_file_part("examples", DAY, 7),
+        );
+        let data_cells: Vec<AsteroidMapCell> =
+            data.into_iter().map(AsteroidMapCell::from).collect();
+        let mut matrix = SpaceMatrix {
+            size,
+            data: data_cells.clone(),
+        };
+        let res = fire_for_position(&mut matrix, Index { x: 11, y: 13 }, 200);
+        assert_eq!(res, Index { x: 8, y: 2 });
+    }
+
+    #[test]
+    fn test_part_two_full() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 7,
+        ));
+        assert_eq!(result, Some(802));
+    }
 }
