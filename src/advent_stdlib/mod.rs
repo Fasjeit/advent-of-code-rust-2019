@@ -86,7 +86,7 @@ impl MapCell {
         }
     }
 
-    pub fn new_deer() -> Self {
+    pub fn new_source() -> Self {
         MapCell {
             has_wall: false,
             source: true,
@@ -114,7 +114,7 @@ impl From<char> for MapCell {
         match value {
             '.' => MapCell::new(false),
             '#' => MapCell::new(true),
-            'S' => MapCell::new_deer(),
+            'S' => MapCell::new_source(),
             'E' => MapCell::new_target(),
             _ => panic!("Unknown char in map data!"),
         }
@@ -245,8 +245,8 @@ impl Direction {
 
 #[derive(Debug, Clone)]
 pub struct Matrix<T> {
-    size: Size,
-    data: Vec<T>,
+    pub size: Size,
+    pub data: Vec<T>,
 }
 
 impl<T> Matrix<T> {

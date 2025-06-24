@@ -6,6 +6,7 @@
 6 - 2
 7 - 3
 8 - 2
+9 - 2
 
 1 - just code it
 2 - easy one with a twist
