@@ -28,3 +28,4 @@ dhat-heap.json
 # Benchmarks
 
 data/timings.json
+/decoded_image_day8_part2.bmp
