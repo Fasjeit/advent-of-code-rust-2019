@@ -356,7 +356,7 @@ impl SpaceMatrix<AsteroidMapCell> {
                 } else if self[y][x].has_asteroid {
                     ch = '#'
                 }
-                print!("{}", ch);
+                print!("{ch}");
             }
             println!();
         }

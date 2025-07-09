@@ -119,7 +119,7 @@ impl Machine {
             Instruction::Add | Instruction::Mul => self.execute_operands_instruction(instruction),
             Instruction::Halt => ExecuteResult::Halt(self.memory[0]),
             _ => ExecuteResult::Panic(
-                format!("Unsupported instruction [{:?}] executed!", instruction).to_string(),
+                format!("Unsupported instruction [{instruction:?}] executed!").to_string(),
             ),
         };
 
@@ -185,7 +185,7 @@ impl Instruction {
         match self {
             Instruction::Add => first + second,
             Instruction::Mul => first * second,
-            _ => panic!("Cannot execute non-operand instruction [{:?}]!", self),
+            _ => panic!("Cannot execute non-operand instruction [{self:?}]!"),
         }
     }
 }

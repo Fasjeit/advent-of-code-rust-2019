@@ -278,7 +278,7 @@ impl Matrix<MapCell> {
                 } else if self[y][x].cost < 10 {
                     ch = self[y][x].cost.to_string().chars().collect::<Vec<char>>()[0]
                 }
-                print!("{}", ch);
+                print!("{ch}");
             }
             println!();
         }
@@ -294,7 +294,7 @@ impl Matrix<bool> {
                 if self[y][x] {
                     ch = '0'
                 }
-                print!("{}", ch);
+                print!("{ch}");
             }
             println!();
         }
