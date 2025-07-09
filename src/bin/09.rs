@@ -40,8 +40,9 @@ pub fn run_machine_with_extended_memory(firmware: &str, input: &str) -> Option<(
 
     let mut machine = Machine::new_with_input(ext_memory, input);
     match machine.execute() {
-        Ok(result) => Some((result, machine.output)),
-        Err(m) => panic!("{}", m),
+        ExecuteResult::Halt(result) => Some((result, machine.output)),
+        ExecuteResult::Panic(m) => panic!("{}", m),
+        _ => panic!("Unexpected result!"),
     }
 }
 
@@ -62,8 +63,9 @@ pub fn run_machine(memory: &str, input: &str) -> Option<(i64, Vec<i64>)> {
 
     let mut machine = Machine::new_with_input(memory, input);
     match machine.execute() {
-        Ok(result) => Some((result, machine.output)),
-        Err(m) => panic!("{}", m),
+        ExecuteResult::Halt(result) => Some((result, machine.output)),
+        ExecuteResult::Panic(m) => panic!("{}", m),
+        _ => panic!("Unexpected result!"),
     }
 }
 
@@ -210,7 +212,7 @@ impl Machine {
     }
 
     // execute until halt
-    fn execute(&mut self) -> Result<i64, String> {
+    fn execute(&mut self) -> ExecuteResult {
         //self.print();
 
         let mut exe_result;
@@ -227,12 +229,12 @@ impl Machine {
             exe_result = self.execute_step();
             match exe_result {
                 ExecuteResult::Continue => (),
-                ExecuteResult::Panic(message) => return Result::Err(message),
+                ExecuteResult::Panic(message) => return ExecuteResult::Panic(message),
                 ExecuteResult::Halt(result) => {
                     //machine.print();
-                    return Ok(result);
+                    return ExecuteResult::Halt(result);
                 }
-                ExecuteResult::WaitingInput => return Ok(-1),
+                ExecuteResult::WaitingInput => return ExecuteResult::WaitingInput,
             }
         }
     }
