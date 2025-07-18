@@ -1,7 +1,5 @@
 advent_of_code::solution!(12);
 
-use itertools::Itertools;
-
 pub fn part_one(input: &str) -> Option<u64> {
     part_one_iter(input, 1000)
 }
@@ -33,11 +31,11 @@ pub fn part_two(input: &str) -> Option<u64> {
 
     let max_iteration = 100000000;
 
-    let c_x = cycle_x(&moons, max_iteration) as u64;
+    let c_x = cycle_x(&mut moons, max_iteration) as u64;
     //dbg!(&c_x);
-    let c_y = cycle_y(&moons, max_iteration) as u64;
+    let c_y = cycle_y(&mut moons, max_iteration) as u64;
     //dbg!(&c_y);
-    let c_z = cycle_z(&moons, max_iteration) as u64;
+    let c_z = cycle_z(&mut moons, max_iteration) as u64;
     //dbg!(&c_z);
 
     Some(lcm3(c_x, c_y, c_z))
@@ -87,11 +85,11 @@ pub fn part_one_iter(input: &str, iterations: u64) -> Option<u64> {
 
         moons.push(moon);
     }
-    moons = cycle(&moons, iterations);
+    cycle(&mut moons, iterations);
 
     //dbg!(&moons);
 
-    let result = moons.iter().fold(0, |acc, m| acc + get_enegry(m));
+    let result = moons.iter().fold(0, |acc, m| acc + get_energy(m));
 
     Some(result as u64)
 }
@@ -107,28 +105,24 @@ struct Moon {
     dz: i64,
 }
 
-fn cycle(moons: &[Moon], n: u64) -> Vec<Moon> {
-    let mut moons = moons.to_owned();
+fn cycle(moons: &mut [Moon], n: u64) {
     for _ in 0..n {
-        moons = apply_gravity(&moons);
-        moons = apply_velocity(&moons);
+        apply_gravity(moons);
+        apply_velocity(moons);
     }
-
-    moons
 }
 
-fn cycle_x(moons: &[Moon], n: u64) -> i64 {
-    let mut moons = moons.to_owned();
+fn cycle_x(moons: &mut [Moon], n: u64) -> i64 {
     let mut prev_x = Vec::<i64>::new();
     let mut prev_dx = Vec::<i64>::new();
-    for moon in &moons {
+    for moon in &mut *moons {
         prev_x.push(moon.x);
         prev_dx.push(moon.dx);
     }
 
     for k in 0..n {
-        moons = apply_gravity_x(&moons);
-        moons = apply_velocity_x(&moons);
+        apply_gravity_x(moons);
+        apply_velocity_x(moons);
 
         //dbg!(&moons[0]);
 
@@ -144,18 +138,17 @@ fn cycle_x(moons: &[Moon], n: u64) -> i64 {
     panic!("Waiting too long...");
 }
 
-fn cycle_y(moons: &[Moon], n: u64) -> i64 {
-    let mut moons = moons.to_owned();
+fn cycle_y(moons: &mut [Moon], n: u64) -> i64 {
     let mut prev_y = Vec::<i64>::new();
     let mut prev_dy = Vec::<i64>::new();
-    for moon in &moons {
+    for moon in &mut *moons {
         prev_y.push(moon.y);
         prev_dy.push(moon.dy);
     }
 
     for k in 0..n {
-        moons = apply_gravity_y(&moons);
-        moons = apply_velocity_y(&moons);
+        apply_gravity_y(moons);
+        apply_velocity_y(moons);
 
         //dbg!(&moons[0]);
 
@@ -171,18 +164,17 @@ fn cycle_y(moons: &[Moon], n: u64) -> i64 {
     panic!("Waiting too long...");
 }
 
-fn cycle_z(moons: &[Moon], n: u64) -> i64 {
-    let mut moons = moons.to_owned();
+fn cycle_z(moons: &mut [Moon], n: u64) -> i64 {
     let mut prev_z = Vec::<i64>::new();
     let mut prev_dz = Vec::<i64>::new();
-    for moon in &moons {
+    for moon in &mut *moons {
         prev_z.push(moon.z);
         prev_dz.push(moon.dz);
     }
 
     for k in 0..n {
-        moons = apply_gravity_z(&moons);
-        moons = apply_velocity_z(&moons);
+        apply_gravity_z(moons);
+        apply_velocity_z(moons);
 
         //dbg!(&k);
         //dbg!(&moons[0]);
@@ -199,119 +191,105 @@ fn cycle_z(moons: &[Moon], n: u64) -> i64 {
     panic!("Waiting too long...");
 }
 
-fn apply_gravity(moons: &[Moon]) -> Vec<Moon> {
-    let mut next_moons = moons.to_owned();
-    for ((ai, a), (bi, b)) in moons.iter().enumerate().tuple_combinations() {
-        if a.x < b.x {
-            next_moons[ai].dx += 1;
-            next_moons[bi].dx -= 1;
-        }
-        if a.x > b.x {
-            next_moons[ai].dx -= 1;
-            next_moons[bi].dx += 1;
-        }
+fn apply_gravity(moons: &mut [Moon]) {
+    for i in 0..moons.len() {
+        for j in (i + 1)..moons.len() {
+            if moons[i].x < moons[j].x {
+                moons[i].dx += 1;
+                moons[j].dx -= 1;
+            } else if moons[i].x > moons[j].x {
+                moons[i].dx -= 1;
+                moons[j].dx += 1;
+            }
 
-        if a.y < b.y {
-            next_moons[ai].dy += 1;
-            next_moons[bi].dy -= 1;
-        }
-        if a.y > b.y {
-            next_moons[ai].dy -= 1;
-            next_moons[bi].dy += 1;
-        }
+            if moons[i].y < moons[j].y {
+                moons[i].dy += 1;
+                moons[j].dy -= 1;
+            } else if moons[i].y > moons[j].y {
+                moons[i].dy -= 1;
+                moons[j].dy += 1;
+            }
 
-        if a.z < b.z {
-            next_moons[ai].dz += 1;
-            next_moons[bi].dz -= 1;
-        }
-        if a.z > b.z {
-            next_moons[ai].dz -= 1;
-            next_moons[bi].dz += 1;
+            if moons[i].z < moons[j].z {
+                moons[i].dz += 1;
+                moons[j].dz -= 1;
+            } else if moons[i].z > moons[j].z {
+                moons[i].dz -= 1;
+                moons[j].dz += 1;
+            }
         }
     }
-    next_moons
 }
 
-fn apply_gravity_x(moons: &[Moon]) -> Vec<Moon> {
-    let mut next_moons = moons.to_owned();
-    for ((ai, a), (bi, b)) in moons.iter().enumerate().tuple_combinations() {
-        if a.x < b.x {
-            next_moons[ai].dx += 1;
-            next_moons[bi].dx -= 1;
-        }
-        if a.x > b.x {
-            next_moons[ai].dx -= 1;
-            next_moons[bi].dx += 1;
-        }
-    }
-    next_moons
-}
-
-fn apply_gravity_y(moons: &[Moon]) -> Vec<Moon> {
-    let mut next_moons = moons.to_owned();
-    for ((ai, a), (bi, b)) in moons.iter().enumerate().tuple_combinations() {
-        if a.y < b.y {
-            next_moons[ai].dy += 1;
-            next_moons[bi].dy -= 1;
-        }
-        if a.y > b.y {
-            next_moons[ai].dy -= 1;
-            next_moons[bi].dy += 1;
+fn apply_gravity_x(moons: &mut [Moon]) {
+    for i in 0..moons.len() {
+        for j in (i + 1)..moons.len() {
+            if moons[i].x < moons[j].x {
+                moons[i].dx += 1;
+                moons[j].dx -= 1;
+            } else if moons[i].x > moons[j].x {
+                moons[i].dx -= 1;
+                moons[j].dx += 1;
+            }
         }
     }
-    next_moons
 }
 
-fn apply_gravity_z(moons: &[Moon]) -> Vec<Moon> {
-    let mut next_moons = moons.to_owned();
-    for ((ai, a), (bi, b)) in moons.iter().enumerate().tuple_combinations() {
-        if a.z < b.z {
-            next_moons[ai].dz += 1;
-            next_moons[bi].dz -= 1;
+fn apply_gravity_y(moons: &mut [Moon]) {
+    for i in 0..moons.len() {
+        for j in (i + 1)..moons.len() {
+            if moons[i].y < moons[j].y {
+                moons[i].dy += 1;
+                moons[j].dy -= 1;
+            } else if moons[i].y > moons[j].y {
+                moons[i].dy -= 1;
+                moons[j].dy += 1;
+            }
         }
-        if a.z > b.z {
-            next_moons[ai].dz -= 1;
-            next_moons[bi].dz += 1;
+    }
+}
+
+fn apply_gravity_z(moons: &mut [Moon]) {
+    for i in 0..moons.len() {
+        for j in (i + 1)..moons.len() {
+            if moons[i].z < moons[j].z {
+                moons[i].dz += 1;
+                moons[j].dz -= 1;
+            } else if moons[i].z > moons[j].z {
+                moons[i].dz -= 1;
+                moons[j].dz += 1;
+            }
         }
     }
-    next_moons
 }
 
-fn apply_velocity(moons: &[Moon]) -> Vec<Moon> {
-    let mut next_moons = moons.to_owned();
-    for (i, moon) in moons.iter().enumerate() {
-        next_moons[i].x += moon.dx;
-        next_moons[i].y += moon.dy;
-        next_moons[i].z += moon.dz;
+fn apply_velocity(moons: &mut [Moon]) {
+    for moon in moons.iter_mut() {
+        moon.x += moon.dx;
+        moon.y += moon.dy;
+        moon.z += moon.dz;
     }
-    next_moons
 }
 
-fn apply_velocity_x(moons: &[Moon]) -> Vec<Moon> {
-    let mut next_moons = moons.to_owned();
-    for (i, moon) in moons.iter().enumerate() {
-        next_moons[i].x += moon.dx;
+fn apply_velocity_x(moons: &mut [Moon]) {
+    for moon in moons.iter_mut() {
+        moon.x += moon.dx;
     }
-    next_moons
 }
 
-fn apply_velocity_y(moons: &[Moon]) -> Vec<Moon> {
-    let mut next_moons = moons.to_owned();
-    for (i, moon) in moons.iter().enumerate() {
-        next_moons[i].y += moon.dy;
+fn apply_velocity_y(moons: &mut [Moon]) {
+    for moon in moons.iter_mut() {
+        moon.y += moon.dy;
     }
-    next_moons
 }
 
-fn apply_velocity_z(moons: &[Moon]) -> Vec<Moon> {
-    let mut next_moons = moons.to_owned();
-    for (i, moon) in moons.iter().enumerate() {
-        next_moons[i].z += moon.dz;
+fn apply_velocity_z(moons: &mut [Moon]) {
+    for moon in moons.iter_mut() {
+        moon.z += moon.dz;
     }
-    next_moons
 }
 
-fn get_enegry(moon: &Moon) -> i64 {
+fn get_energy(moon: &Moon) -> i64 {
     let potential_energy = moon.x.abs() + moon.y.abs() + moon.z.abs();
     let kinetic_energy = moon.dx.abs() + moon.dy.abs() + moon.dz.abs();
 
