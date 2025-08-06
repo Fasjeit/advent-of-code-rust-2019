@@ -9,6 +9,7 @@
 9 - 2
 10 - 4.3
 11 - 2
+12 - 3
 
 1 - just code it
 2 - easy one with a twist
