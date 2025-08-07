@@ -1,10 +1,58 @@
 use std::fmt::Debug;
+// use std::io;
+// use std::io::Write;
 use std::str::FromStr;
+// use std::thread::sleep;
+// use std::time::Duration;
 
 advent_of_code::solution!(13);
 
-pub fn part_one(_input: &str) -> Option<u64> {
-    None
+pub fn part_one(input: &str) -> Option<u64> {
+    let (_result, output) = run_machine_with_extended_memory(input, "").unwrap();
+
+    let mut cells: Vec<MapCell> = Vec::<MapCell>::new();
+    for _i in 0..(38 * 38) {
+        cells.push(MapCell {
+            cell_type: CellType::Empty,
+        });
+    }
+
+    let mut map = Matrix {
+        size: Size { x: 38, y: 38 },
+        data: cells,
+    };
+
+    let mut output_iterator = output.iter().peekable();
+    while output_iterator.peek().is_some() {
+        let x = *output_iterator.next().unwrap() as usize;
+        let y = *output_iterator.next().unwrap() as usize;
+        let tile_id = *output_iterator.next().unwrap();
+
+        map[y][x] = MapCell::from(tile_id);
+
+        //map.print();
+        //let to_print = map.print_to_string();
+
+        //let mut stdout = io::stdout().lock();
+        //stdout
+        //    .write_all(to_print.as_bytes())
+        //    .expect("Can't write to stdout!");
+
+        // reset position
+        //print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+
+        //sleep(Duration::new(0, 100_000_000));
+    }
+
+    let total_block = map.data.iter().fold(0, |acc, c| {
+        if let CellType::Block = c.cell_type {
+            acc + 1
+        } else {
+            acc
+        }
+    });
+
+    Some(total_block)
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
@@ -41,6 +89,11 @@ struct MapCell {
 //             has_been_colored: false,
 //         }
 //     }
+// }
+
+// struct Game {
+//     machine: Machine,
+//     map: Matrix<MapCell>,
 // }
 
 impl From<char> for MapCell {
@@ -132,6 +185,25 @@ impl Matrix<MapCell> {
             }
             println!();
         }
+    }
+
+    #[allow(dead_code)]
+    fn print_to_string(&self) -> String {
+        let mut result = "".to_string();
+        for y in 0..self.size.y {
+            for x in 0..self.size.x {
+                let ch = match self[y][x].cell_type {
+                    CellType::Empty => ' ',
+                    CellType::Wall => '@',
+                    CellType::Block => '#',
+                    CellType::Horizontal => '^',
+                    CellType::Ball => 'o',
+                };
+                result.push(ch);
+            }
+            result.push('\n');
+        }
+        result
     }
 }
 
