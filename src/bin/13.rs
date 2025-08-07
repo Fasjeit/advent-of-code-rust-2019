@@ -30,7 +30,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 
         map[y][x] = MapCell::from(tile_id);
 
-        //map.print();
+        map.print();
         //let to_print = map.print_to_string();
 
         //let mut stdout = io::stdout().lock();
@@ -919,7 +919,7 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(0));
     }
 
     #[test]
