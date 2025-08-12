@@ -1,7 +1,4 @@
-use std::{
-    collections::{btree_map::Entry, HashMap},
-    default,
-};
+use std::collections::HashMap;
 
 advent_of_code::solution!(14);
 
@@ -36,29 +33,26 @@ pub fn part_one(input: &str) -> Option<u64> {
         conventions.insert(output.name, (inputs, output.count));
     }
 
-    let end_label = "FUEL";
-    let start_label = "ORE";
-
     let mut store = HashMap::new();
-    let res = create_requeued("FUEL", 1, &conventions, &mut store);
+    let res = create_requested("FUEL", 1, &conventions, &mut store);
     Some(res)
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
+pub fn part_two(_input: &str) -> Option<u64> {
     None
 }
 
-fn create_requeued(
+fn create_requested(
     requested_resource_name: &str,
     requested_resource_count: u64,
     conventions: &HashMap<String, (Vec<ItemCount>, u64)>,
     store: &mut HashMap<String, u64>,
 ) -> u64 {
-    dbg!(requested_resource_count);
-    dbg!(requested_resource_name);
+    //dbg!(requested_resource_count);
+    //dbg!(requested_resource_name);
 
     if requested_resource_name == "ORE" {
-        println!("Requested ore");
+        //println!("Requested ore");
         return requested_resource_count;
     }
 
@@ -73,19 +67,21 @@ fn create_requeued(
 
     let mut total_result = 0;
 
-    let stored = store
+    let stored = *store
         .entry(requested_resource_name.to_string())
-        .or_default()
-        .clone();
+        .or_default();
     if stored >= requested_resource_count {
         store
             .entry(requested_resource_name.to_string())
             .and_modify(|r| *r -= requested_resource_count);
-        println!(
-            "return with stored [{}] [{}]",
-            requested_resource_name, requested_resource_count
-        );
+        // println!(
+        //     "return with stored [{}] [{}]",
+        //     requested_resource_name, requested_resource_count
+        // );
         return 0;
+    } else {
+        // Will use all leftovers now.
+        store.insert(requested_resource_name.to_string(), 0);
     }
 
     let (required_conversion, conversion_output) =
@@ -94,13 +90,13 @@ fn create_requeued(
     let required_iterations = required_new_resources.div_ceil(*conversion_output);
 
     for conversion in required_conversion {
-        println!(
-            "requesting more [{}] - [{}]",
-            &conversion.name,
-            conversion.count * required_iterations
-        );
+        // println!(
+        //     "requesting more [{}] - [{}]",
+        //     &conversion.name,
+        //     conversion.count * required_iterations
+        // );
 
-        total_result += create_requeued(
+        total_result += create_requested(
             &conversion.name,
             conversion.count * required_iterations,
             conventions,
@@ -108,15 +104,15 @@ fn create_requeued(
         );
     }
 
-    // store leftovers (error here!)
-    dbg!(&conversion_output);
-    dbg!(&required_iterations);
-    dbg!(&requested_resource_count);
+    // store leftovers
+    //dbg!(&conversion_output);
+    //dbg!(&required_iterations);
+    //dbg!(&requested_resource_count);
     let leftovers = conversion_output * required_iterations - required_new_resources;
-    println!(
-        "storing leftovers [{}] - [{}]",
-        requested_resource_name, leftovers
-    );
+    // println!(
+    //     "storing leftovers [{}] - [{}]",
+    //     requested_resource_name, leftovers
+    // );
     store
         .entry(requested_resource_name.to_string())
         .and_modify(|r| *r += leftovers)
