@@ -38,8 +38,63 @@ pub fn part_one(input: &str) -> Option<u64> {
     Some(res)
 }
 
-pub fn part_two(_input: &str) -> Option<u64> {
-    None
+pub fn part_two(input: &str) -> Option<u64> {
+    // Just do a search to find the value `n` for fuel, that requires less than target ore, but
+    // `n+1` requires more than target ore.
+    // First find the order of value, than do a binary search.
+
+    let mut conventions = HashMap::new();
+
+    for line in input.lines() {
+        let mut splitted = line.split(" => ");
+        let inputs_str = splitted.next();
+        let individual_inputs_str = inputs_str.unwrap().split(", ");
+
+        let mut inputs = Vec::new();
+        for input_str in individual_inputs_str {
+            let input = ItemCount::from(input_str);
+            inputs.push(input);
+        }
+
+        let output_str = splitted.next().unwrap();
+        let output = ItemCount::from(output_str);
+
+        // output - (List<input-count>, output_count)
+        conventions.insert(output.name, (inputs, output.count));
+    }
+
+    let target_ore = 1_000_000_000_000;
+    let mut test_fuel: u64 = 1;
+    let mut result_ore: u64 = 0;
+
+    while result_ore < target_ore {
+        test_fuel *= 10;
+        let mut store = HashMap::new();
+        result_ore = create_requested("FUEL", test_fuel, &conventions, &mut store);
+        //dbg!(result_ore);
+        //dbg!(test_fuel);
+    }
+
+    let mut left_search = test_fuel / 10;
+    let mut right_search: u64 = test_fuel;
+    loop {
+        let median = left_search + (right_search - left_search) / 2;
+        //dbg!(left_search);
+        //dbg!(right_search);
+        //dbg!(median);
+
+        let mut store = HashMap::new();
+        let result_ore_median = create_requested("FUEL", median, &conventions, &mut store);
+        let result_ore_median_next = create_requested("FUEL", median + 1, &conventions, &mut store);
+
+        if result_ore_median <= target_ore && result_ore_median_next >= target_ore {
+            return Some(median);
+        } else if result_ore_median_next < target_ore {
+            left_search = median;
+        } else if result_ore_median > target_ore {
+            right_search = median;
+        }
+    }
 }
 
 fn create_requested(
@@ -205,8 +260,26 @@ mod tests {
     }
 
     #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+    fn test_part_two_5() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 5,
+        ));
+        assert_eq!(result, Some(82892753));
+    }
+
+    #[test]
+    fn test_part_two_6() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 6,
+        ));
+        assert_eq!(result, Some(5586022));
+    }
+
+    #[test]
+    fn test_part_two_7() {
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 7,
+        ));
+        assert_eq!(result, Some(460664));
     }
 }
