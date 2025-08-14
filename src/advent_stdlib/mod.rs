@@ -3,12 +3,63 @@ use std::collections::BinaryHeap;
 use std::fmt::Debug;
 use std::str::FromStr;
 
+/// Dijkstra path cost computation.
+///
+/// # Examples
+/// Find costs from start to end.
+/// ```
+/// use advent_of_code::advent_stdlib::*;
+/// use std::cmp::Reverse;
+/// use std::collections::BinaryHeap;
+/// use std::fmt::Debug;
+/// use std::str::FromStr;
+///
+/// let input = ".#.\n.#.\n...";
+/// let mut matrix = Matrix::<MapCell>::from_string(input);
+///
+/// let mut start_index = Index {x: 0, y: 0};
+/// let mut end_index = Index {x: 2, y: 0};
+///
+/// let mut to_visit_set = BinaryHeap::new();
+/// to_visit_set.push(Reverse((0_u64, start_index)));
+///
+/// let result = pseudo_dijkstra(&mut matrix, Some(&end_index), &mut to_visit_set);
+/// assert_eq!(result, Some(6));
+/// ```
+/// Find all costs.
+/// ```
+/// use advent_of_code::advent_stdlib::*;
+/// use std::cmp::Reverse;
+/// use std::collections::BinaryHeap;
+/// use std::fmt::Debug;
+/// use std::str::FromStr;
+///
+/// let input = ".#.\n.#.\n...";
+/// let mut matrix = Matrix::<MapCell>::from_string(input);
+///
+/// let mut start_index = Index {x: 0, y: 0};
+///
+/// let mut to_visit_set = BinaryHeap::new();
+/// to_visit_set.push(Reverse((0_u64, start_index)));
+///
+/// let result = pseudo_dijkstra(&mut matrix, None, &mut to_visit_set);
+/// assert_eq!(result, None);
+/// assert_eq!(matrix[0][0].cost, 0);
+/// assert_eq!(matrix[2][1].cost, 3);
+/// assert_eq!(matrix[0][2].cost, 6);
+/// ```
 #[allow(dead_code)]
 pub fn pseudo_dijkstra(
     matrix: &mut Matrix<MapCell>,
     ending_position: Option<&Index>,
     to_visit_set: &mut BinaryHeap<Reverse<(u64, Index)>>,
 ) -> Option<u64> {
+    // Usage:
+    // let mut to_visit_set = BinaryHeap::new();
+    // to_visit_set.push(Reverse((0_u64, start_index)));
+    // let result = pseudo_dijkstra(&mut robot.map, Some(&end_index), &mut to_visit_set);
+    // or without end_index, if need to visit all cells.
+
     let mut safe_counter = 100000;
 
     while let Some(Reverse((cost, index))) = to_visit_set.pop() {
@@ -70,10 +121,10 @@ pub fn pseudo_dijkstra(
 
 #[derive(Debug, Clone)]
 pub struct MapCell {
-    has_wall: bool,
-    source: bool,
-    target: bool,
-    cost: u64,
+    pub has_wall: bool,
+    pub source: bool,
+    pub target: bool,
+    pub cost: u64,
 }
 
 impl MapCell {
