@@ -283,6 +283,15 @@ impl Matrix<MapCell> {
             println!();
         }
     }
+
+    pub fn from_string(input: &str) -> Self {
+        let (data, size) = parse_row_input_as_data_array::<char>(input);
+        let data_cells: Vec<MapCell> = data.into_iter().map(MapCell::from).collect();
+        Matrix {
+            size,
+            data: data_cells.clone(),
+        }
+    }
 }
 
 impl Matrix<bool> {
