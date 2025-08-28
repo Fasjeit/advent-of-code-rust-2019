@@ -95,6 +95,18 @@ impl Machine {
         }
     }
 
+    pub fn new_with_ascii_input(memory: Vec<i64>, input: &str) -> Self {
+        Machine {
+            memory,
+            instruction_pointer: 0,
+            input: input.chars().map(|c| c as i64).collect(),
+            input_pointer: 0,
+            output: Vec::new(),
+            output_pointer: 0,
+            relative_base: 0,
+        }
+    }
+
     // fn get_noun(&self) -> u64 {
     //     self.memory[1]
     // }
@@ -389,6 +401,14 @@ impl Machine {
         println!("Instruction pointer C: {}", self.instruction_pointer);
         println!("Memory: {:?}", self.memory);
         println!();
+    }
+
+    pub fn get_ascii_output(&self) -> String {
+        let output_chars = self
+            .output
+            .iter()
+            .map(|i| char::from_u32(*i as u32).unwrap());
+        String::from_iter(output_chars)
     }
 }
 

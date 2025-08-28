@@ -1,6 +1,7 @@
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 use std::fmt::Debug;
+use std::fmt::Display;
 use std::str::FromStr;
 
 /// Dijkstra path cost computation.
@@ -172,6 +173,22 @@ impl From<char> for MapCell {
     }
 }
 
+impl Display for MapCell {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut ch = '.';
+        if self.has_wall() {
+            ch = '#'
+        } else if self.source {
+            ch = 'S'
+        } else if self.target {
+            ch = 'E'
+        } else if self.cost < 10 {
+            ch = self.cost.to_string().chars().collect::<Vec<char>>()[0]
+        }
+        write!(f, "{}", ch)
+    }
+}
+
 #[derive(Debug, Copy, Clone, Eq, Hash, PartialEq)]
 pub struct Size {
     pub x: usize,
@@ -302,59 +319,37 @@ pub struct Matrix<T> {
 
 impl<T> Matrix<T> {
     #[allow(dead_code)]
-    pub fn get_index_from_position(&self, indx: usize) -> Index {
-        let y = indx / self.size.x;
-        let x = indx - y * self.size.x;
+    pub fn get_index_from_position(&self, index: usize) -> Index {
+        let y = index / self.size.x;
+        let x = index - y * self.size.x;
         Index { x, y }
     }
-}
 
-impl Matrix<MapCell> {
     #[allow(dead_code)]
     pub fn has_index(&self, index: &Index) -> bool {
         self.size.x > index.x && self.size.y > index.y
     }
+}
 
+impl<T: From<char>> Matrix<T> {
     #[allow(dead_code)]
-    pub fn print(&self) {
-        for y in 0..self.size.y {
-            for x in 0..self.size.x {
-                let mut ch = '.';
-                if self[y][x].has_wall() {
-                    ch = '#'
-                } else if self[y][x].source {
-                    ch = 'S'
-                } else if self[y][x].target {
-                    ch = 'E'
-                } else if self[y][x].cost < 10 {
-                    ch = self[y][x].cost.to_string().chars().collect::<Vec<char>>()[0]
-                }
-                print!("{ch}");
-            }
-            println!();
-        }
-    }
-
-    pub fn from_string(input: &str) -> Self {
+    pub fn from_char_input(input: &str) -> Self {
         let (data, size) = parse_row_input_as_data_array::<char>(input);
-        let data_cells: Vec<MapCell> = data.into_iter().map(MapCell::from).collect();
+        let data_cells: Vec<T> = data.into_iter().map(T::from).collect();
+
         Matrix {
             size,
-            data: data_cells.clone(),
+            data: data_cells,
         }
     }
 }
 
-impl Matrix<bool> {
+impl<T: Display> Matrix<T> {
     #[allow(dead_code)]
     pub fn print(&self) {
         for y in 0..self.size.y {
             for x in 0..self.size.x {
-                let mut ch = '.';
-                if self[y][x] {
-                    ch = '0'
-                }
-                print!("{ch}");
+                print!("{}", self[y][x]);
             }
             println!();
         }
