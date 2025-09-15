@@ -60,6 +60,40 @@ pub fn pseudo_dijkstra(
     // to_visit_set.push(Reverse((0_u64, start_index)));
     // let result = pseudo_dijkstra(&mut robot.map, Some(&end_index), &mut to_visit_set);
     // or without end_index, if need to visit all cells.
+    //
+    // Also can be rewritten to use with custom cost object with custom comparer.
+    // Example with Cost state containing a HashSet:
+    //
+    // #[derive(PartialEq, Eq)]
+    // struct CostState {
+    //     cost: u64,
+    //     state: OtherType
+    // }
+    //
+    // impl Ord for CostState {
+    //     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    //         self.cost.cmp(&other.cost)
+    //     }
+    // }
+    //
+    // impl CostState {
+    //     fn new(data: &(u64, Index, HashSet<char>)) -> Self {
+    //         CostState {
+    //             cost: data.0,
+    //             index: data.1,
+    //             state: data.2.clone(),
+    //         }
+    //     }
+    // }
+    //
+    // impl PartialOrd for CostState {
+    //     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    //         Some(self.cmp(other))
+    //     }
+    // }
+    //
+    // and then
+    // to_visit_set: &mut BinaryHeap<Reverse<CostState>>
 
     let mut safe_counter = 100000;
 
@@ -134,7 +168,7 @@ impl MapCell {
             has_wall,
             source: false,
             target: false,
-            cost: { u64::MAX },
+            cost: u64::MAX,
         }
     }
 
@@ -143,7 +177,7 @@ impl MapCell {
             has_wall: false,
             source: true,
             target: false,
-            cost: { u64::MAX },
+            cost: u64::MAX,
         }
     }
 
@@ -152,7 +186,7 @@ impl MapCell {
             has_wall: false,
             source: false,
             target: true,
-            cost: { u64::MAX },
+            cost: u64::MAX,
         }
     }
 
