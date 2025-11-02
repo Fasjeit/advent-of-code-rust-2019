@@ -39,9 +39,9 @@ pub fn solve_part_1(input: &str, target_key_count: usize) -> Option<u64> {
         start_index,
         vec![false; target_key_count],
     ))));
+
     let result = pseudo_dijkstra(&mut map, None, &mut to_visit_set);
     //map.print();
-
     //let test_index = Index { x: 1, y: 1 };
     //dbg!(&map[test_index.y][test_index.x].cost);
 
@@ -81,6 +81,16 @@ fn get_ascii_distance_from_a(c: char) -> usize {
     c as usize - 'a' as usize
 }
 
+fn fully_contained_as_subset(first: &Vec<bool>, second: &Vec<bool>) -> bool {
+    for (i, v) in first.iter().enumerate() {
+        // first value is true, but the second is false - not subset
+        if *v && !second[i] {
+            return false;
+        }
+    }
+    true
+}
+
 fn pseudo_dijkstra(
     matrix: &mut Matrix<MapCell>,
     ending_position: Option<&Index>,
@@ -92,7 +102,7 @@ fn pseudo_dijkstra(
     // let result = pseudo_dijkstra(&mut robot.map, Some(&end_index), &mut to_visit_set);
     // or without end_index, if need to visit all cells.
 
-    let mut safe_counter = 1_000_000;
+    let mut safe_counter = 1_000_0000;
 
     while let Some(Reverse(cost_state)) = to_visit_set.pop() {
         if safe_counter <= 0 {
@@ -104,33 +114,29 @@ fn pseudo_dijkstra(
         let cost = cost_state.cost;
         let mut state = cost_state.state;
 
-        //dbg!(&index);
-
-        // if matrix[index.y][index.x].cost != u64::MAX {
-        //     assert!(matrix[index.y][index.x].cost <= cost);
-        //     continue;
-        // }
-
-        if let Some(char) = matrix[index.y][index.x].door_or_key {
-            if char.is_lowercase() {
-                // lowercase are doors
-
-                // also update the cost for old state to make lookups work properly
-                matrix[index.y][index.x].cost.insert(state.clone(), cost);
-                // update the state
-                state[get_ascii_distance_from_a(char)] = true;
+        // new check
+        if let Some(&best_cost) = matrix[index.y][index.x].cost.get(&state) {
+            if cost > best_cost {
+                continue; // already found a better path for this exact state
             }
         }
 
-        // update the cost for current state
+        // If there's a key here, pick it up before recording cost or expanding neighbors
+        if let Some(c) = matrix[index.y][index.x].door_or_key {
+            if c.is_ascii_lowercase() {
+                let key_index = get_ascii_distance_from_a(c);
+                state[key_index] = true;
+            }
+        }
+
+        // Now record the cost only for the updated key state
         matrix[index.y][index.x].cost.insert(state.clone(), cost);
 
         if state.iter().all(|k| *k) {
             // collected all keys!
+            dbg!(safe_counter);
             return Some(cost);
         }
-
-        //dbg!(&index);
 
         if let Some(ending_position) = ending_position {
             if index == *ending_position {
@@ -138,55 +144,21 @@ fn pseudo_dijkstra(
             }
         }
 
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Down) {
-            if !matrix[next_index.y][next_index.x].has_wall(&state)
-                && (!matrix[next_index.y][next_index.x].cost.contains_key(&state)
-                    || matrix[next_index.y][next_index.x].cost[&state] > (cost + 1))
-            {
-                to_visit_set.push(Reverse(CostState::new(&(
-                    cost + 1,
-                    next_index,
-                    state.clone(),
-                ))));
-            }
-        }
-
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Right) {
-            if !matrix[next_index.y][next_index.x].has_wall(&state)
-                && (!matrix[next_index.y][next_index.x].cost.contains_key(&state)
-                    || matrix[next_index.y][next_index.x].cost[&state] > (cost + 1))
-            {
-                to_visit_set.push(Reverse(CostState::new(&(
-                    cost + 1,
-                    next_index,
-                    state.clone(),
-                ))));
-            }
-        }
-
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Left) {
-            if !matrix[next_index.y][next_index.x].has_wall(&state)
-                && (!matrix[next_index.y][next_index.x].cost.contains_key(&state)
-                    || matrix[next_index.y][next_index.x].cost[&state] > (cost + 1))
-            {
-                to_visit_set.push(Reverse(CostState::new(&(
-                    cost + 1,
-                    next_index,
-                    state.clone(),
-                ))));
-            }
-        }
-
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Up) {
-            if !matrix[next_index.y][next_index.x].has_wall(&state)
-                && (!matrix[next_index.y][next_index.x].cost.contains_key(&state)
-                    || matrix[next_index.y][next_index.x].cost[&state] > (cost + 1))
-            {
-                to_visit_set.push(Reverse(CostState::new(&(
-                    cost + 1,
-                    next_index,
-                    state.clone(),
-                ))));
+        for dir in [
+            Direction::Up,
+            Direction::Down,
+            Direction::Left,
+            Direction::Right,
+        ] {
+            if let Some(next_index) = index.navigate_to(matrix, &dir) {
+                let next_cell = &matrix[next_index.y][next_index.x];
+                if !next_cell.has_wall(&state) && !next_cell.has_better_superset(&state, cost + 1) {
+                    to_visit_set.push(Reverse(CostState::new(&(
+                        cost + 1,
+                        next_index,
+                        state.clone(),
+                    ))));
+                }
             }
         }
     }
@@ -221,6 +193,16 @@ impl MapCell {
         }
     }
 
+    pub fn has_better_superset(&self, state: &Vec<bool>, current_cost: u64) -> bool {
+        for (st, &old_cost) in self.cost.iter() {
+            if old_cost <= current_cost && fully_contained_as_subset(state, st) {
+                //dbg!("have better set!");
+                return true; // found cheaper or equal superset state
+            }
+        }
+        false
+    }
+
     pub fn has_wall(&self, state: &Vec<bool>) -> bool {
         if self.has_wall {
             true
@@ -231,7 +213,6 @@ impl MapCell {
                     // door!
                     // check the key
                     let index = get_ascii_distance_from_a(id.to_lowercase().next().unwrap());
-
                     if !state[index] {
                         return true;
                     }
@@ -263,11 +244,7 @@ impl Display for MapCell {
         let ch = if self.has_robot {
             '@'
         } else if !self.has_wall {
-            // if self.cost != u64::MAX {
-            //     char::from_digit((self.cost % 10) as u32, 10).unwrap()
-            // } else {
             self.door_or_key.unwrap_or('.')
-            //}
         } else if self.has_wall {
             '#'
         } else {
