@@ -19,34 +19,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(_input: &str) -> Option<u64> {
-    // The new state is
-    // struct CostState {
-    // cost: u64,
-    // positions: [Index; 4],   // current positions of the 4 robots
-    // state: Vec<bool>,        // collected keys
-
-    // Store states
-    // HashMap<([Index; 4], Vec<bool>), u64>
-
-    /*
-    Initialize priority queue with CostState { positions = [pos1,pos2,pos3,pos4], state = all false, cost=0 }
-
-    while queue not empty:
-        pop the state with lowest cost
-        if all keys collected:
-            return cost
-
-        for each robot i in 0..3:
-            for each key reachable by robot i:
-                if key not collected and all doors along path are unlocked:
-                    new_state = copy of current state
-                    collect key in new_state.state
-                    update new_state.positions[i] = key_position
-                    new_state.cost += distance to key
-                    if new_state not visited or cheaper:
-                        push new_state to queue
-         */
-    todo!();
+    None
 }
 
 pub fn solve_part_1(input: &str, target_key_count: usize) -> Option<u64> {
@@ -347,6 +320,6 @@ mod tests {
         let result = part_two(&advent_of_code::template::read_file_part(
             "examples", DAY, 7,
         ));
-        assert_eq!(result, Some(8));
+        assert_eq!(result, None);
     }
 }
