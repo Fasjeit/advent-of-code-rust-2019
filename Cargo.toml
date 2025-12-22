@@ -2,7 +2,7 @@
 name = "advent_of_code"
 version = "0.11.0"
 authors = ["Felix Spöttel <1682504+fspoettel@users.noreply.github.com>"]
-edition = "2021"
+edition = "2024"
 default-run = "advent_of_code"
 publish = false
 

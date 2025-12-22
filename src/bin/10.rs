@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use advent_of_code::advent_stdlib::{parse_row_input_as_data_array, Index, Size};
+use advent_of_code::advent_stdlib::{Index, Size, parse_row_input_as_data_array_matrix};
 use fixed::types::I20F12;
 use itertools::Itertools;
 
@@ -25,7 +25,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 }
 
 fn find_best_position(input: &str) -> (Index, u32) {
-    let (data, size) = parse_row_input_as_data_array::<char>(input);
+    let (data, size) = parse_row_input_as_data_array_matrix::<char>(input);
     let data_cells: Vec<AsteroidMapCell> = data.into_iter().map(AsteroidMapCell::from).collect();
 
     let matrix = SpaceMatrix {
@@ -37,7 +37,7 @@ fn find_best_position(input: &str) -> (Index, u32) {
 }
 
 fn find_best_position_and_fire(input: &str, desired: u32) -> Index {
-    let (data, size) = parse_row_input_as_data_array::<char>(input);
+    let (data, size) = parse_row_input_as_data_array_matrix::<char>(input);
     let data_cells: Vec<AsteroidMapCell> = data.into_iter().map(AsteroidMapCell::from).collect();
 
     let mut matrix = SpaceMatrix {
@@ -412,7 +412,7 @@ mod tests {
 
     #[test]
     fn test_part_one_1() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 1),
         );
         let data_cells: Vec<AsteroidMapCell> =
@@ -427,7 +427,7 @@ mod tests {
 
     #[test]
     fn test_part_one_2() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 2),
         );
         let data_cells: Vec<AsteroidMapCell> =
@@ -450,7 +450,7 @@ mod tests {
 
     #[test]
     fn test_part_one_3() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 3),
         );
         let data_cells: Vec<AsteroidMapCell> =
@@ -465,7 +465,7 @@ mod tests {
 
     #[test]
     fn test_part_one_4() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 4),
         );
         let data_cells: Vec<AsteroidMapCell> =
@@ -487,7 +487,7 @@ mod tests {
 
     #[test]
     fn test_part_one_5() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 5),
         );
         let data_cells: Vec<AsteroidMapCell> =
@@ -510,7 +510,7 @@ mod tests {
 
     #[test]
     fn test_part_one_6() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 6),
         );
         let data_cells: Vec<AsteroidMapCell> =
@@ -533,7 +533,7 @@ mod tests {
 
     #[test]
     fn test_part_one_7() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 7),
         );
         let data_cells: Vec<AsteroidMapCell> =
@@ -556,7 +556,7 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 8),
         );
         let data_cells: Vec<AsteroidMapCell> =
@@ -571,7 +571,7 @@ mod tests {
 
     #[test]
     fn test_part_two_big() {
-        let (data, size) = parse_row_input_as_data_array::<char>(
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(
             &advent_of_code::template::read_file_part("examples", DAY, 7),
         );
         let data_cells: Vec<AsteroidMapCell> =

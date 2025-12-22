@@ -37,10 +37,10 @@ pub fn part_two_with_target(input: &str, target: u64) -> Option<u64> {
     for noun in 0..=99 {
         for verb in 0..=99 {
             let mut current_machine = machine.clone_with_noun_verb(noun, verb);
-            if let Ok(result) = current_machine.execute() {
-                if result == target {
-                    return Some(100 * noun + verb);
-                }
+            if let Ok(result) = current_machine.execute()
+                && result == target
+            {
+                return Some(100 * noun + verb);
             }
         }
     }

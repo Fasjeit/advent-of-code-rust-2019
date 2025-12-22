@@ -112,42 +112,38 @@ pub fn pseudo_dijkstra(
 
         //dbg!(&index);
 
-        if let Some(ending_position) = ending_position {
-            if index == *ending_position {
-                return Some(cost);
-            }
+        if let Some(ending_position) = ending_position
+            && index == *ending_position
+        {
+            return Some(cost);
         }
 
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Down) {
-            if !matrix[next_index.y][next_index.x].has_wall()
-                && matrix[next_index.y][next_index.x].cost >= (cost + 1)
-            {
-                to_visit_set.push(Reverse((cost + 1, next_index)));
-            }
+        if let Some(next_index) = index.navigate_to(matrix, &Direction::Down)
+            && !matrix[next_index.y][next_index.x].has_wall()
+            && matrix[next_index.y][next_index.x].cost >= (cost + 1)
+        {
+            to_visit_set.push(Reverse((cost + 1, next_index)));
         }
 
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Right) {
-            if !matrix[next_index.y][next_index.x].has_wall()
-                && matrix[next_index.y][next_index.x].cost >= (cost + 1)
-            {
-                to_visit_set.push(Reverse((cost + 1, next_index)));
-            }
+        if let Some(next_index) = index.navigate_to(matrix, &Direction::Right)
+            && !matrix[next_index.y][next_index.x].has_wall()
+            && matrix[next_index.y][next_index.x].cost >= (cost + 1)
+        {
+            to_visit_set.push(Reverse((cost + 1, next_index)));
         }
 
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Left) {
-            if !matrix[next_index.y][next_index.x].has_wall()
-                && matrix[next_index.y][next_index.x].cost >= (cost + 1)
-            {
-                to_visit_set.push(Reverse((cost + 1, next_index)));
-            }
+        if let Some(next_index) = index.navigate_to(matrix, &Direction::Left)
+            && !matrix[next_index.y][next_index.x].has_wall()
+            && matrix[next_index.y][next_index.x].cost >= (cost + 1)
+        {
+            to_visit_set.push(Reverse((cost + 1, next_index)));
         }
 
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Up) {
-            if !matrix[next_index.y][next_index.x].has_wall()
-                && matrix[next_index.y][next_index.x].cost >= (cost + 1)
-            {
-                to_visit_set.push(Reverse((cost + 1, next_index)));
-            }
+        if let Some(next_index) = index.navigate_to(matrix, &Direction::Up)
+            && !matrix[next_index.y][next_index.x].has_wall()
+            && matrix[next_index.y][next_index.x].cost >= (cost + 1)
+        {
+            to_visit_set.push(Reverse((cost + 1, next_index)));
         }
     }
 
@@ -260,10 +256,10 @@ impl Index {
 
     #[allow(dead_code)]
     pub fn down<T>(&self, matrix: Option<&Matrix<T>>) -> Option<Index> {
-        if let Some(matrix) = matrix {
-            if self.y == matrix.size.y - 1 {
-                return None;
-            }
+        if let Some(matrix) = matrix
+            && self.y == matrix.size.y - 1
+        {
+            return None;
         }
         Some(Index {
             x: self.x,
@@ -273,10 +269,10 @@ impl Index {
 
     #[allow(dead_code)]
     pub fn right<T>(&self, matrix: Option<&Matrix<T>>) -> Option<Index> {
-        if let Some(matrix) = matrix {
-            if self.x == matrix.size.x - 1 {
-                return None;
-            }
+        if let Some(matrix) = matrix
+            && self.x == matrix.size.x - 1
+        {
+            return None;
         }
         Some(Index {
             x: self.x + 1,
@@ -368,7 +364,7 @@ impl<T> Matrix<T> {
 impl<T: From<char>> Matrix<T> {
     #[allow(dead_code)]
     pub fn from_char_input(input: &str) -> Self {
-        let (data, size) = parse_row_input_as_data_array::<char>(input);
+        let (data, size) = parse_row_input_as_data_array_matrix::<char>(input);
         let data_cells: Vec<T> = data.into_iter().map(T::from).collect();
 
         Matrix {
@@ -406,19 +402,33 @@ impl<T> std::ops::IndexMut<usize> for Matrix<T> {
     }
 }
 
+impl<T> std::ops::Index<Index> for Matrix<T> {
+    type Output = T;
+
+    fn index(&self, index: Index) -> &T {
+        &self[index.y][index.x]
+    }
+}
+
+impl<T> std::ops::IndexMut<Index> for Matrix<T> {
+    fn index_mut(&mut self, index: Index) -> &mut T {
+        &mut self[index.y][index.x]
+    }
+}
+
 #[allow(dead_code)]
-pub fn parse_row_input_as_data_array<T>(input: &str) -> (Vec<T>, Size)
+pub fn parse_row_input_as_data_array_matrix<T>(input: &str) -> (Vec<T>, Size)
 where
     T: FromStr + std::fmt::Debug,
     <T as FromStr>::Err: Debug,
 {
-    let splitted_lines: Vec<&str> = input.lines().collect();
+    let splitted_lines: Vec<&str> = input.lines().filter(|l| !l.is_empty()).collect();
     let size_y = splitted_lines.len();
     let size_x = splitted_lines[0].len();
 
-    let result: Vec<T> = input
-        .chars()
-        .filter(|c| *c != '\n' && *c != '\r')
+    let result: Vec<T> = splitted_lines
+        .iter()
+        .flat_map(|line| line.chars())
         .map(|c| c.to_string().parse().expect("T values expected"))
         .collect();
 
@@ -429,4 +439,20 @@ where
             y: size_y,
         },
     )
+}
+
+#[allow(dead_code)]
+pub fn parse_row_input_as_data_array<T>(input: &str) -> Vec<T>
+where
+    T: FromStr + std::fmt::Debug,
+    <T as FromStr>::Err: Debug,
+{
+    let splitted_lines: Vec<&str> = input.lines().filter(|l| !l.is_empty()).collect();
+
+    let result: Vec<T> = splitted_lines
+        .iter()
+        .map(|c| c.to_string().parse().expect("T values expected"))
+        .collect();
+
+    result
 }

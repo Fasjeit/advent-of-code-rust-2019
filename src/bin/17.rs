@@ -118,16 +118,16 @@ fn build_path(map: Matrix<MapCell>) -> String {
             panic!("INF LOOP");
         }
 
-        if let Some(next_pos) = pos.navigate_to(&map, &dir) {
-            if !map[next_pos.y][next_pos.x].empty_space {
-                // move forward
-                curr_forward_counter += 1;
-                pos = next_pos;
+        if let Some(next_pos) = pos.navigate_to(&map, &dir)
+            && !map[next_pos.y][next_pos.x].empty_space
+        {
+            // move forward
+            curr_forward_counter += 1;
+            pos = next_pos;
 
-                //dbg!("forward!");
+            //dbg!("forward!");
 
-                continue;
-            }
+            continue;
         }
 
         // Cannot go further - save and rotate!
@@ -142,21 +142,21 @@ fn build_path(map: Matrix<MapCell>) -> String {
         }
         curr_forward_counter = 0;
 
-        if let Some(right_pos) = pos.navigate_to(&map, &dir.turn_right()) {
-            if !map[right_pos.y][right_pos.x].empty_space {
-                dir = dir.turn_right();
-                last_turn_direction = Some(TurnDirection::Right);
-                //dbg!("right!");
-                continue;
-            }
+        if let Some(right_pos) = pos.navigate_to(&map, &dir.turn_right())
+            && !map[right_pos.y][right_pos.x].empty_space
+        {
+            dir = dir.turn_right();
+            last_turn_direction = Some(TurnDirection::Right);
+            //dbg!("right!");
+            continue;
         }
-        if let Some(left_pos) = pos.navigate_to(&map, &dir.turn_left()) {
-            if !map[left_pos.y][left_pos.x].empty_space {
-                dir = dir.turn_left();
-                last_turn_direction = Some(TurnDirection::Left);
-                //dbg!("left!");
-                continue;
-            }
+        if let Some(left_pos) = pos.navigate_to(&map, &dir.turn_left())
+            && !map[left_pos.y][left_pos.x].empty_space
+        {
+            dir = dir.turn_left();
+            last_turn_direction = Some(TurnDirection::Left);
+            //dbg!("left!");
+            continue;
         }
         // skip first ','
         return result[1..].to_string();

@@ -1,27 +1,57 @@
 use advent_of_code::advent_stdlib::Direction;
 use advent_of_code::advent_stdlib::Index;
 use advent_of_code::advent_stdlib::Matrix;
-use std::cmp::Reverse;
-use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::fmt::Display;
-use std::str::FromStr;
 
 advent_of_code::solution!(18);
 
 pub fn part_one(input: &str) -> Option<u64> {
+    // The main idea is pre compute shortest paths from key to key
+    // using BFS, keeping track of required keys.
+    // Then create a new graph and traverse with Dijkstera.
+    // Trick not working for all data (see test 7 as example)
+    // as we are storing only one state for a path.
     solve_part_1(input, 26)
 }
 
-pub fn part_two(input: &str) -> Option<u64> {
-    None
+pub fn part_two(_input: &str) -> Option<u64> {
+    // The new state is
+    // struct CostState {
+    // cost: u64,
+    // positions: [Index; 4],   // current positions of the 4 robots
+    // state: Vec<bool>,        // collected keys
+
+    // Store states
+    // HashMap<([Index; 4], Vec<bool>), u64>
+
+    /*
+    Initialize priority queue with CostState { positions = [pos1,pos2,pos3,pos4], state = all false, cost=0 }
+
+    while queue not empty:
+        pop the state with lowest cost
+        if all keys collected:
+            return cost
+
+        for each robot i in 0..3:
+            for each key reachable by robot i:
+                if key not collected and all doors along path are unlocked:
+                    new_state = copy of current state
+                    collect key in new_state.state
+                    update new_state.positions[i] = key_position
+                    new_state.cost += distance to key
+                    if new_state not visited or cheaper:
+                        push new_state to queue
+         */
+    todo!();
 }
 
 pub fn solve_part_1(input: &str, target_key_count: usize) -> Option<u64> {
-    let mut map = Matrix::<MapCell>::from_char_input(input);
-    map.print();
+    let map = Matrix::<MapCell>::from_char_input(input);
+    //map.print();
 
     let robot_pos = map
         .data
@@ -33,115 +63,151 @@ pub fn solve_part_1(input: &str, target_key_count: usize) -> Option<u64> {
 
     let start_index = map.get_index_from_position(robot_pos);
 
-    let mut to_visit_set: BinaryHeap<Reverse<CostState>> = BinaryHeap::new();
-    to_visit_set.push(Reverse(CostState::new(&(
-        0_u64,
-        start_index,
-        vec![false; target_key_count],
-    ))));
+    let graph = build_key_graph(&map, start_index);
 
-    let result = pseudo_dijkstra(&mut map, None, &mut to_visit_set);
-    //map.print();
-    //let test_index = Index { x: 1, y: 1 };
-    //dbg!(&map[test_index.y][test_index.x].cost);
+    let mut collected = vec![false; target_key_count];
+    let mut memo = Memo::new();
 
-    result
+    let min_steps = search_graph(&graph, '@', &mut collected, &mut memo);
+    Some(min_steps)
 }
 
-#[derive(PartialEq, Eq)]
-struct CostState {
-    cost: u64,
-    index: Index,
-    state: Vec<bool>,
-}
+// Memoization key: (current node, collected keys vector)
+type Memo = HashMap<(char, Vec<bool>), u64>;
 
-impl CostState {
-    fn new(data: &(u64, Index, Vec<bool>)) -> Self {
-        CostState {
-            cost: data.0,
-            index: data.1,
-            state: data.2.clone(),
+fn search_graph(
+    graph: &KeyGraph,
+    current: char,
+    collected: &mut Vec<bool>,
+    memo: &mut Memo,
+) -> u64 {
+    if collected.iter().all(|&k| k) {
+        return 0; // all keys collected
+    }
+
+    if let Some(&cached) = memo.get(&(current, collected.clone())) {
+        return cached;
+    }
+
+    let mut min_cost = u64::MAX;
+
+    if let Some(edges) = graph.get(&current) {
+        'edge_loop: for edge in edges {
+            let key_idx = (edge.to as u8 - b'a') as usize;
+            if collected[key_idx] {
+                continue; // already collected
+            }
+
+            // Check if all doors on this edge are unlocked
+            for &door in &edge.doors_needed {
+                let door_idx = (door.to_ascii_lowercase() as u8 - b'a') as usize;
+                if !collected[door_idx] {
+                    continue 'edge_loop; // can't go yet
+                }
+            }
+
+            // Collect the key
+            collected[key_idx] = true;
+            //dbg!(edge.dist);
+            //dbg!(search_graph(graph, edge.to, collected, total_keys, memo));
+            let search_cost = search_graph(graph, edge.to, collected, memo);
+            let cost = if search_cost == u64::MAX {
+                u64::MAX
+            } else {
+                edge.dist + search_cost
+            };
+
+            min_cost = min_cost.min(cost);
+            collected[key_idx] = false; // backtrack
         }
     }
+
+    memo.insert((current, collected.clone()), min_cost);
+    min_cost
 }
 
-impl Ord for CostState {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.cost.cmp(&other.cost)
-    }
+#[derive(Debug, Clone)]
+struct Edge {
+    to: char,
+    dist: u64,
+    doors_needed: Vec<char>, // doors required to reach the key
 }
 
-impl PartialOrd for CostState {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
+// Graph maps a node (start `@` or a key) to all reachable keys
+type KeyGraph = HashMap<char, Vec<Edge>>;
 
-fn get_ascii_distance_from_a(c: char) -> usize {
-    c as usize - 'a' as usize
-}
+fn build_key_graph(matrix: &Matrix<MapCell>, start_index: Index) -> KeyGraph {
+    let mut graph: KeyGraph = HashMap::new();
 
-fn fully_contained_as_subset(first: &Vec<bool>, second: &Vec<bool>) -> bool {
-    for (i, v) in first.iter().enumerate() {
-        // first value is true, but the second is false - not subset
-        if *v && !second[i] {
-            return false;
-        }
-    }
-    true
-}
+    // BFS from start position '@'
+    let start_edges = bfs_from_index(matrix, start_index);
+    graph.insert(
+        '@',
+        start_edges
+            .into_iter()
+            .map(|(_, c, d, doors)| Edge {
+                to: c,
+                dist: d,
+                doors_needed: doors,
+            })
+            .collect(),
+    );
 
-fn pseudo_dijkstra(
-    matrix: &mut Matrix<MapCell>,
-    ending_position: Option<&Index>,
-    to_visit_set: &mut BinaryHeap<Reverse<CostState>>,
-) -> Option<u64> {
-    // Usage:
-    // let mut to_visit_set = BinaryHeap::new();
-    // to_visit_set.push(Reverse((0_u64, start_index)));
-    // let result = pseudo_dijkstra(&mut robot.map, Some(&end_index), &mut to_visit_set);
-    // or without end_index, if need to visit all cells.
-
-    let mut safe_counter = 1_000_0000;
-
-    while let Some(Reverse(cost_state)) = to_visit_set.pop() {
-        if safe_counter <= 0 {
-            panic!("Safe counter stop.");
-        }
-        safe_counter -= 1;
-
-        let index = cost_state.index;
-        let cost = cost_state.cost;
-        let mut state = cost_state.state;
-
-        // new check
-        if let Some(&best_cost) = matrix[index.y][index.x].cost.get(&state) {
-            if cost > best_cost {
-                continue; // already found a better path for this exact state
+    // BFS from each key
+    for y in 0..matrix.size.y {
+        for x in 0..matrix.size.x {
+            let cell = &matrix[y][x];
+            if let Some(c) = cell.door_or_key
+                && c.is_ascii_lowercase()
+            {
+                let edges = bfs_from_index(matrix, Index { x, y });
+                graph.insert(
+                    c,
+                    edges
+                        .into_iter()
+                        .map(|(_, kc, d, doors)| Edge {
+                            to: kc,
+                            dist: d,
+                            doors_needed: doors,
+                        })
+                        .collect(),
+                );
             }
         }
+    }
 
-        // If there's a key here, pick it up before recording cost or expanding neighbors
-        if let Some(c) = matrix[index.y][index.x].door_or_key {
-            if c.is_ascii_lowercase() {
-                let key_index = get_ascii_distance_from_a(c);
-                state[key_index] = true;
-            }
+    graph
+}
+
+// BFS from a start_index, returns a vector of reachable keys with distances and doors needed
+fn bfs_from_index(
+    matrix: &Matrix<MapCell>,
+    start_index: Index,
+) -> Vec<(Index, char, u64, Vec<char>)> {
+    let mut queue: VecDeque<(Index, u64, Vec<char>)> = VecDeque::new();
+    let mut visited: HashSet<Index> = HashSet::new();
+
+    queue.push_back((start_index, 0, Vec::new()));
+    visited.insert(start_index);
+
+    let mut result = Vec::new();
+
+    while let Some((current_index, dist, mut doors)) = queue.pop_front() {
+        let cell = &matrix[current_index.y][current_index.x];
+
+        // If it's a door, add it to the doors vector
+        if let Some(c) = cell.door_or_key
+            && c.is_ascii_uppercase()
+        {
+            doors.push(c);
         }
 
-        // Now record the cost only for the updated key state
-        matrix[index.y][index.x].cost.insert(state.clone(), cost);
-
-        if state.iter().all(|k| *k) {
-            // collected all keys!
-            dbg!(safe_counter);
-            return Some(cost);
-        }
-
-        if let Some(ending_position) = ending_position {
-            if index == *ending_position {
-                return Some(cost);
-            }
+        // If it's a key (but not the start), add to the result
+        if let Some(c) = cell.door_or_key
+            && c.is_ascii_lowercase()
+            && current_index != start_index
+        {
+            result.push((current_index, c, dist, doors.clone()));
         }
 
         for dir in [
@@ -150,20 +216,17 @@ fn pseudo_dijkstra(
             Direction::Left,
             Direction::Right,
         ] {
-            if let Some(next_index) = index.navigate_to(matrix, &dir) {
+            if let Some(next_index) = current_index.navigate_to(matrix, &dir) {
                 let next_cell = &matrix[next_index.y][next_index.x];
-                if !next_cell.has_wall(&state) && !next_cell.has_better_superset(&state, cost + 1) {
-                    to_visit_set.push(Reverse(CostState::new(&(
-                        cost + 1,
-                        next_index,
-                        state.clone(),
-                    ))));
+                if !next_cell.has_wall && !visited.contains(&next_index) {
+                    visited.insert(next_index);
+                    queue.push_back((next_index, dist + 1, doors.clone()));
                 }
             }
         }
     }
 
-    None
+    result
 }
 
 #[derive(Debug, Clone)]
@@ -171,7 +234,6 @@ pub struct MapCell {
     has_wall: bool,
     has_robot: bool,
     door_or_key: Option<char>,
-    cost: HashMap<Vec<bool>, u64>,
 }
 
 impl MapCell {
@@ -180,7 +242,6 @@ impl MapCell {
             has_wall,
             has_robot: false,
             door_or_key: None,
-            cost: HashMap::new(),
         }
     }
 
@@ -189,36 +250,6 @@ impl MapCell {
             has_wall: false,
             has_robot: true,
             door_or_key: None,
-            cost: HashMap::new(),
-        }
-    }
-
-    pub fn has_better_superset(&self, state: &Vec<bool>, current_cost: u64) -> bool {
-        for (st, &old_cost) in self.cost.iter() {
-            if old_cost <= current_cost && fully_contained_as_subset(state, st) {
-                //dbg!("have better set!");
-                return true; // found cheaper or equal superset state
-            }
-        }
-        false
-    }
-
-    pub fn has_wall(&self, state: &Vec<bool>) -> bool {
-        if self.has_wall {
-            true
-        } else {
-            // check keys
-            if let Some(id) = self.door_or_key {
-                if id.is_ascii_uppercase() {
-                    // door!
-                    // check the key
-                    let index = get_ascii_distance_from_a(id.to_lowercase().next().unwrap());
-                    if !state[index] {
-                        return true;
-                    }
-                }
-            }
-            false
         }
     }
 }
@@ -233,7 +264,6 @@ impl From<char> for MapCell {
                 has_wall: false,
                 has_robot: false,
                 door_or_key: Some(value),
-                cost: HashMap::new(),
             },
         }
     }
@@ -303,9 +333,20 @@ mod tests {
         assert_eq!(result, Some(81));
     }
 
+    // #[test]
+    // fn test_part_one_6() {
+    //     let result = solve_part_1(
+    //         &advent_of_code::template::read_file_part("examples", DAY, 6),
+    //         9,
+    //     );
+    //     assert_eq!(result, Some(9));
+    // }
+
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        let result = part_two(&advent_of_code::template::read_file_part(
+            "examples", DAY, 7,
+        ));
+        assert_eq!(result, Some(8));
     }
 }
