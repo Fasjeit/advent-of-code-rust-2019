@@ -4,6 +4,23 @@ use std::fmt::Debug;
 use std::fmt::Display;
 use std::str::FromStr;
 
+#[macro_export]
+macro_rules! bench {
+    ($expr:expr) => {{
+        let start = std::time::Instant::now();
+        let result = $expr;
+        let elapsed = start.elapsed();
+
+        println!(
+            "[BENCH] {} took {:?}",
+            stringify!($expr),
+            elapsed
+        );
+
+        result
+    }};
+}
+
 /// Dijkstra path cost computation.
 ///
 /// # Examples
