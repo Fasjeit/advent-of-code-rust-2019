@@ -16,6 +16,7 @@
 16 - 4.5
 17 - 3.8
 18 - 5
+19 - 2
 
 1 - just code it
 2 - easy one with a twist

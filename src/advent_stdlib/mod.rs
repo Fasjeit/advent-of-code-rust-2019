@@ -11,11 +11,7 @@ macro_rules! bench {
         let result = $expr;
         let elapsed = start.elapsed();
 
-        println!(
-            "[BENCH] {} took {:?}",
-            stringify!($expr),
-            elapsed
-        );
+        println!("[BENCH] {} took {:?}", stringify!($expr), elapsed);
 
         result
     }};
@@ -396,6 +392,16 @@ impl<T: Display> Matrix<T> {
     pub fn print(&self) {
         for y in 0..self.size.y {
             for x in 0..self.size.x {
+                print!("{}", self[y][x]);
+            }
+            println!();
+        }
+    }
+
+    #[allow(dead_code)]
+    pub fn print_part(&self, pos_left_up: Index, pos_right_down: Index) {
+        for y in pos_left_up.y..pos_right_down.y {
+            for x in pos_left_up.x..pos_right_down.x {
                 print!("{}", self[y][x]);
             }
             println!();
