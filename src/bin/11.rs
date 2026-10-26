@@ -208,14 +208,13 @@ impl Matrix<MapCell> {
     fn print(&self) {
         for y in 0..self.size.y {
             for x in 0..self.size.x {
-                let ch;
-                if self[y][x].has_robot {
-                    ch = '^'
+                let ch = if self[y][x].has_robot {
+                    '^'
                 } else if self[y][x].color_black {
-                    ch = '.'
+                    '.'
                 } else {
-                    ch = '#'
-                }
+                    '#'
+                };
                 print!("{ch}");
             }
             println!();

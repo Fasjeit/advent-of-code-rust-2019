@@ -1,13 +1,13 @@
 use advent_of_code::advent_stdlib::Direction;
 use advent_of_code::advent_stdlib::Index;
 use advent_of_code::advent_stdlib::Matrix;
+use std::cmp::Ordering;
+use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::fmt::Display;
-use std::cmp::Ordering;
-use std::collections::BinaryHeap;
 
 advent_of_code::solution!(18);
 
@@ -76,16 +76,28 @@ pub fn solve_part_2(input: &str, target_key_count: usize) -> Option<u64> {
     let labels = ['@', '$', '%', '&'];
     let mut start_indexes = Vec::new();
 
-    let index_0 = Index { y : center_index.y -1, x: center_index.x -1};
+    let index_0 = Index {
+        y: center_index.y - 1,
+        x: center_index.x - 1,
+    };
     map[index_0] = MapCell::new_robot_with_name(labels[0]);
     start_indexes.push(index_0);
-    let index_1 = Index { y : center_index.y +1, x: center_index.x -1};
+    let index_1 = Index {
+        y: center_index.y + 1,
+        x: center_index.x - 1,
+    };
     map[index_1] = MapCell::new_robot_with_name(labels[1]);
     start_indexes.push(index_1);
-    let index_2 = Index { y : center_index.y -1, x: center_index.x +1};
+    let index_2 = Index {
+        y: center_index.y - 1,
+        x: center_index.x + 1,
+    };
     map[index_2] = MapCell::new_robot_with_name(labels[2]);
     start_indexes.push(index_2);
-    let index_3 = Index { y : center_index.y +1, x: center_index.x +1};
+    let index_3 = Index {
+        y: center_index.y + 1,
+        x: center_index.x + 1,
+    };
     map[index_3] = MapCell::new_robot_with_name(labels[3]);
     start_indexes.push(index_3);
 
@@ -96,7 +108,6 @@ pub fn solve_part_2(input: &str, target_key_count: usize) -> Option<u64> {
     let min_steps = search_graph4(&graph, labels, target_key_count);
     Some(min_steps)
 }
-
 
 struct DijkstraState {
     steps_taken: u64,
@@ -152,11 +163,7 @@ impl Ord for DijkstraState4 {
     }
 }
 
-fn search_graph(
-    graph: &HashMap<char, Vec<Edge>>,
-    start: char,
-    key_count: usize,
-) -> u64 {
+fn search_graph(graph: &HashMap<char, Vec<Edge>>, start: char, key_count: usize) -> u64 {
     let mut heap = BinaryHeap::new();
 
     // Mininal distance to the current key also having other keys.
@@ -173,7 +180,10 @@ fn search_graph(
 
     while let Some(current_state) = heap.pop() {
         // State: current_key + collected_keys
-        let current_key_state = (current_state.current_position, current_state.collected_keys.clone());
+        let current_key_state = (
+            current_state.current_position,
+            current_state.collected_keys.clone(),
+        );
 
         // Already have better state
         if current_state.steps_taken > distances[&current_key_state] {
@@ -238,11 +248,7 @@ fn search_graph(
     u64::MAX
 }
 
-fn search_graph4(
-    graph: &HashMap<char, Vec<Edge>>,
-    start: [char; 4],
-    key_count: usize,
-) -> u64 {
+fn search_graph4(graph: &HashMap<char, Vec<Edge>>, start: [char; 4], key_count: usize) -> u64 {
     let mut heap = BinaryHeap::new();
 
     // Mininal distance to the current key also having other keys.
@@ -259,7 +265,10 @@ fn search_graph4(
 
     while let Some(current_state) = heap.pop() {
         // State: current_key + collected_keys
-        let current_key_state = (current_state.positions, current_state.collected_keys.clone());
+        let current_key_state = (
+            current_state.positions,
+            current_state.collected_keys.clone(),
+        );
 
         // Already have better state
         if current_state.steps_taken > distances[&current_key_state] {
@@ -272,8 +281,7 @@ fn search_graph4(
         }
 
         // Traversing each robot
-        for robot_index in 0..4
-        {
+        for robot_index in 0..4 {
             let current_position = current_state.positions[robot_index];
             // Getting edges for current position.
             let edges = match graph.get(&current_position) {
@@ -326,9 +334,9 @@ fn search_graph4(
                         positions: next_positions,
                         collected_keys: next_state_collected,
                     });
+                }
             }
         }
-    }
     }
 
     u64::MAX
@@ -391,11 +399,12 @@ fn build_key_graph4(matrix: &Matrix<MapCell>, start_indexes: &[Index]) -> KeyGra
     let mut graph: KeyGraph = HashMap::new();
 
     // BFS from start positions
-    for start_index in start_indexes
-    {
+    for start_index in start_indexes {
         let start_edges = bfs_from_index(matrix, *start_index);
         graph.insert(
-            matrix[*start_index].has_robot.expect("Expected robot name at map possition!"),
+            matrix[*start_index]
+                .has_robot
+                .expect("Expected robot name at map possition!"),
             start_edges
                 .into_iter()
                 .map(|(_, c, d, doors)| Edge {
@@ -533,7 +542,7 @@ impl From<char> for MapCell {
 
 impl Display for MapCell {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let ch = if let Some(robot_name)  = self.has_robot {
+        let ch = if let Some(robot_name) = self.has_robot {
             robot_name
         } else if !self.has_wall {
             self.door_or_key.unwrap_or('.')
@@ -615,7 +624,7 @@ mod tests {
 
     #[test]
     fn test_part_two_7() {
-          let result = solve_part_2(
+        let result = solve_part_2(
             &advent_of_code::template::read_file_part("examples", DAY, 7),
             4,
         );
@@ -624,7 +633,7 @@ mod tests {
 
     #[test]
     fn test_part_two_8() {
-          let result = solve_part_2(
+        let result = solve_part_2(
             &advent_of_code::template::read_file_part("examples", DAY, 8),
             4,
         );
@@ -633,7 +642,7 @@ mod tests {
 
     #[test]
     fn test_part_two_9() {
-          let result = solve_part_2(
+        let result = solve_part_2(
             &advent_of_code::template::read_file_part("examples", DAY, 9),
             12,
         );
@@ -642,7 +651,7 @@ mod tests {
 
     #[test]
     fn test_part_two_10() {
-          let result = solve_part_2(
+        let result = solve_part_2(
             &advent_of_code::template::read_file_part("examples", DAY, 10),
             15,
         );

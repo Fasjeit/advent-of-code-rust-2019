@@ -51,7 +51,7 @@ impl Timings {
             }
         }
 
-        data.sort_unstable_by(|a, b| a.day.cmp(&b.day));
+        data.sort_unstable_by_key(|a| a.day);
         Timings { data }
     }
 
