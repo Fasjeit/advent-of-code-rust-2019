@@ -45,6 +45,7 @@ pub fn solve_part_1(input: &str, target_key_count: usize) -> Option<u64> {
 
 pub fn solve_part_2(input: &str, target_key_count: usize) -> Option<u64> {
     // Same as part 1, but storing 4-state and travesing each robot in each state.
+    // Also making vec<bool> for doors and keys just u32.
 
     let mut map = Matrix::<MapCell>::from_char_input(input);
 
@@ -139,7 +140,7 @@ impl Ord for DijkstraState {
 struct DijkstraState4 {
     steps_taken: u64,
     positions: [char; 4],
-    collected_keys: Vec<bool>,
+    collected_keys: u32,
 }
 
 impl PartialEq for DijkstraState4 {
@@ -248,27 +249,24 @@ fn search_graph(graph: &HashMap<char, Vec<Edge>>, start: char, key_count: usize)
     u64::MAX
 }
 
-fn search_graph4(graph: &HashMap<char, Vec<Edge>>, start: [char; 4], key_count: usize) -> u64 {
+fn search_graph4(graph: &HashMap<char, Vec<Edge4>>, start: [char; 4], key_count: usize) -> u64 {
     let mut heap = BinaryHeap::new();
 
-    // Mininal distance to the current key also having other keys.
-    let mut distances: HashMap<([char; 4], Vec<bool>), u64> = HashMap::new();
+    let mut distances: HashMap<([char; 4], u32), u64> = HashMap::new();
 
-    let collected = vec![false; key_count];
+    distances.insert((start, 0), 0);
 
-    distances.insert((start, collected.clone()), 0);
     heap.push(DijkstraState4 {
         steps_taken: 0,
         positions: start,
-        collected_keys: collected,
+        collected_keys: 0,
     });
+
+    let target_mask = (1u32 << key_count) - 1; // mask for finding all keys
 
     while let Some(current_state) = heap.pop() {
         // State: current_key + collected_keys
-        let current_key_state = (
-            current_state.positions,
-            current_state.collected_keys.clone(),
-        );
+        let current_key_state = (current_state.positions, current_state.collected_keys);
 
         // Already have better state
         if current_state.steps_taken > distances[&current_key_state] {
@@ -276,7 +274,7 @@ fn search_graph4(graph: &HashMap<char, Vec<Edge>>, start: [char; 4], key_count: 
         }
 
         // Found all keys, optimal result garanteed by poping from priority queue
-        if current_state.collected_keys.iter().filter(|&&v| v).count() == key_count {
+        if current_state.collected_keys == target_mask {
             return current_state.steps_taken;
         }
 
@@ -291,17 +289,15 @@ fn search_graph4(graph: &HashMap<char, Vec<Edge>>, start: [char; 4], key_count: 
 
             for edge in edges {
                 let key_index = (edge.to as u8 - b'a') as usize;
+                let key_bit = 1u32 << key_index;
 
                 // Already collected the key in the current state.
-                if current_state.collected_keys[key_index] {
+                if current_state.collected_keys & key_bit != 0 {
                     continue;
                 }
 
                 // Do not traverce closed door path
-                let can_open_edge_doors = edge.doors_needed.iter().all(|door| {
-                    let door_index = (*door as u8 - b'A') as usize;
-                    current_state.collected_keys[door_index]
-                });
+                let can_open_edge_doors = edge.doors_needed & !current_state.collected_keys == 0;
 
                 if !can_open_edge_doors {
                     continue;
@@ -314,11 +310,10 @@ fn search_graph4(graph: &HashMap<char, Vec<Edge>>, start: [char; 4], key_count: 
                 let mut next_positions = current_state.positions;
                 next_positions[robot_index] = edge.to;
 
-                let mut next_state_collected = current_state.collected_keys.clone();
-                next_state_collected[key_index] = true;
+                let next_state_collected = current_state.collected_keys | key_bit;
 
                 // Next key to collect using the edge for a robot
-                let next_state = (next_positions, next_state_collected.clone());
+                let next_state = (next_positions, next_state_collected);
 
                 // Test if we already have a better distance for next state
                 let should_visit = match distances.get(&next_state) {
@@ -349,8 +344,18 @@ struct Edge {
     doors_needed: Vec<char>, // doors required to reach the key,
 }
 
+#[derive(Debug, Clone)]
+struct Edge4 {
+    to: char,
+    dist: u64,
+    doors_needed: u32, // doors required to reach the key,
+}
+
 // Graph maps a node (start `@` or a key) to all reachable keys
 type KeyGraph = HashMap<char, Vec<Edge>>;
+
+// Graph maps a node (start `@` or a key) to all reachable keys
+type KeyGraph4 = HashMap<char, Vec<Edge4>>;
 
 fn build_key_graph(matrix: &Matrix<MapCell>, start_index: Index) -> KeyGraph {
     let mut graph: KeyGraph = HashMap::new();
@@ -395,19 +400,19 @@ fn build_key_graph(matrix: &Matrix<MapCell>, start_index: Index) -> KeyGraph {
     graph
 }
 
-fn build_key_graph4(matrix: &Matrix<MapCell>, start_indexes: &[Index]) -> KeyGraph {
-    let mut graph: KeyGraph = HashMap::new();
+fn build_key_graph4(matrix: &Matrix<MapCell>, start_indexes: &[Index]) -> KeyGraph4 {
+    let mut graph: KeyGraph4 = HashMap::new();
 
     // BFS from start positions
     for start_index in start_indexes {
-        let start_edges = bfs_from_index(matrix, *start_index);
+        let start_edges = bfs_from_index4(matrix, *start_index);
         graph.insert(
             matrix[*start_index]
                 .has_robot
                 .expect("Expected robot name at map possition!"),
             start_edges
                 .into_iter()
-                .map(|(_, c, d, doors)| Edge {
+                .map(|(_, c, d, doors)| Edge4 {
                     to: c,
                     dist: d,
                     doors_needed: doors,
@@ -423,12 +428,12 @@ fn build_key_graph4(matrix: &Matrix<MapCell>, start_indexes: &[Index]) -> KeyGra
             if let Some(c) = cell.door_or_key
                 && c.is_ascii_lowercase()
             {
-                let edges = bfs_from_index(matrix, Index { x, y });
+                let edges = bfs_from_index4(matrix, Index { x, y });
                 graph.insert(
                     c,
                     edges
                         .into_iter()
-                        .map(|(_, kc, d, doors)| Edge {
+                        .map(|(_, kc, d, doors)| Edge4 {
                             to: kc,
                             dist: d,
                             doors_needed: doors,
@@ -484,6 +489,53 @@ fn bfs_from_index(
                 if !next_cell.has_wall && !visited.contains(&next_index) {
                     visited.insert(next_index);
                     queue.push_back((next_index, dist + 1, doors.clone()));
+                }
+            }
+        }
+    }
+
+    result
+}
+
+// BFS from a start_index, returns a vector of reachable keys with distances and doors needed
+fn bfs_from_index4(matrix: &Matrix<MapCell>, start_index: Index) -> Vec<(Index, char, u64, u32)> {
+    let mut queue: VecDeque<(Index, u64, u32)> = VecDeque::new();
+    let mut visited: HashSet<Index> = HashSet::new();
+
+    queue.push_back((start_index, 0, 0));
+    visited.insert(start_index);
+
+    let mut result = Vec::new();
+
+    while let Some((current_index, dist, mut doors)) = queue.pop_front() {
+        let cell = &matrix[current_index.y][current_index.x];
+
+        // If it's a door, add it to the doors vector
+        if let Some(c) = cell.door_or_key
+            && c.is_ascii_uppercase()
+        {
+            doors |= 1u32 << (c as u8 - b'A');
+        }
+
+        // If it's a key (but not the start), add to the result
+        if let Some(c) = cell.door_or_key
+            && c.is_ascii_lowercase()
+            && current_index != start_index
+        {
+            result.push((current_index, c, dist, doors));
+        }
+
+        for dir in [
+            Direction::Up,
+            Direction::Down,
+            Direction::Left,
+            Direction::Right,
+        ] {
+            if let Some(next_index) = current_index.navigate_to(matrix, &dir) {
+                let next_cell = &matrix[next_index.y][next_index.x];
+                if !next_cell.has_wall && !visited.contains(&next_index) {
+                    visited.insert(next_index);
+                    queue.push_back((next_index, dist + 1, doors));
                 }
             }
         }
