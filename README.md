@@ -64,6 +64,7 @@ Solutions for [Advent of Code](https://adventofcode.com/) in [Rust](https://www.
 |            Day            |            Algo            |
 | :-----------------------: | :------------------------: |
 | [Day 15](./src/bin/15.rs) | `blind agent path finding` |
+| [Day 20](./src/bin/20.rs) | `Multi-dim Dijkstra`       |
 
 ## Template setup
 
