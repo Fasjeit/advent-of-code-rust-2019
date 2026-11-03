@@ -116,12 +116,12 @@ pub fn pseudo_dijkstra(
         }
         safe_counter -= 1;
 
-        if matrix[index.y][index.x].cost != u64::MAX {
-            assert!(matrix[index.y][index.x].cost <= cost);
+        if matrix[index].cost != u64::MAX {
+            assert!(matrix[index].cost <= cost);
             continue;
         }
 
-        matrix[index.y][index.x].cost = cost;
+        matrix[index].cost = cost;
 
         //dbg!(&index);
 
@@ -131,32 +131,18 @@ pub fn pseudo_dijkstra(
             return Some(cost);
         }
 
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Down)
-            && !matrix[next_index.y][next_index.x].has_wall()
-            && matrix[next_index.y][next_index.x].cost >= (cost + 1)
-        {
-            to_visit_set.push(Reverse((cost + 1, next_index)));
-        }
-
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Right)
-            && !matrix[next_index.y][next_index.x].has_wall()
-            && matrix[next_index.y][next_index.x].cost >= (cost + 1)
-        {
-            to_visit_set.push(Reverse((cost + 1, next_index)));
-        }
-
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Left)
-            && !matrix[next_index.y][next_index.x].has_wall()
-            && matrix[next_index.y][next_index.x].cost >= (cost + 1)
-        {
-            to_visit_set.push(Reverse((cost + 1, next_index)));
-        }
-
-        if let Some(next_index) = index.navigate_to(matrix, &Direction::Up)
-            && !matrix[next_index.y][next_index.x].has_wall()
-            && matrix[next_index.y][next_index.x].cost >= (cost + 1)
-        {
-            to_visit_set.push(Reverse((cost + 1, next_index)));
+        for dir in [
+            Direction::Up,
+            Direction::Down,
+            Direction::Left,
+            Direction::Right,
+        ] {
+            if let Some(next_index) = index.navigate_to(matrix, &dir)
+                && !matrix[next_index].has_wall()
+                && matrix[next_index].cost >= (cost + 1)
+            {
+                to_visit_set.push(Reverse((cost + 1, next_index)));
+            }
         }
     }
 
