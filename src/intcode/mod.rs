@@ -164,7 +164,9 @@ impl Machine {
             ParameterMode::Relative => {
                 let expected_addr = parameter.value + self.relative_base;
                 if expected_addr < 0 {
-                    panic!("Unexpected memory address for relative parameter address [{expected_addr}]!");
+                    panic!(
+                        "Unexpected memory address for relative parameter address [{expected_addr}]!"
+                    );
                 }
                 let addr = expected_addr as usize;
                 if addr >= self.memory.len() {
@@ -189,7 +191,9 @@ impl Machine {
             ParameterMode::Relative => {
                 let expected_addr = parameter.value + self.relative_base;
                 if expected_addr < 0 {
-                    panic!("Unexpected memory address for relative parameter address [{expected_addr}]!");
+                    panic!(
+                        "Unexpected memory address for relative parameter address [{expected_addr}]!"
+                    );
                 }
                 let addr = expected_addr as usize;
                 if addr >= self.memory.len() {
@@ -407,7 +411,7 @@ impl Machine {
         let output_chars = self
             .output
             .iter()
-            .map(|i| char::from_u32(*i as u32).unwrap());
+            .map(|i| char::from_u32(*i as u32).expect("Expecting ASCII symbols as output"));
         String::from_iter(output_chars)
     }
 }
