@@ -66,8 +66,9 @@ Solutions for [Advent of Code](https://adventofcode.com/) in [Rust](https://www.
 ## Useful primitives
 |            Day            |            Algo            |
 | :-----------------------: | :------------------------: |
-| [Day 15](./src/bin/15.rs) | `blind agent path finding` |
+| [Day 15](./src/bin/15.rs) | `Blind agent path finding` |
 | [Day 20](./src/bin/20.rs) | `Multi-dim Dijkstra`       |
+| [Day 22](./src/bin/22.rs) | `Fast affine func power`   |
 
 ## Template setup
 
