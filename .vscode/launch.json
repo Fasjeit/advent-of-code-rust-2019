@@ -1,62 +1,23 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests for a solution",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    // replace with binary name (e.g. "01") here if you always
-                    // want to debug one file regardless of the active file in
-                    // the editor.
-                    "--bin=${fileBasenameNoExtension}",
-                    "--package=advent_of_code"
-                ],
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
+            "type": "cppvsdbg",
             "request": "launch",
             "name": "Debug a solution",
-            "cargo": {
-                "args": [
-                    "build",
-                    // replace with binary name (e.g. "01") here if you always
-                    // want to debug one file regardless of the active file in
-                    // the editor
-                    "--bin=${fileBasenameNoExtension}",
-                    "--package=advent_of_code"
-                ],
-            },
-            "cwd": "${workspaceFolder}"
+            "program": "${workspaceFolder}/target/debug/${fileBasenameNoExtension}.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "rust: cargo build bin"
         },
         {
-            "type": "lldb",
+            "type": "cppvsdbg",
             "request": "launch",
-            "name": "Debug unit tests in library 'advent_of_code'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--lib",
-                    "--features=test_lib",
-                    "--package=advent_of_code"
-                ],
-                "filter": {
-                    "name": "advent_of_code",
-                    "kind": "lib"
-                }
-            },
+            "name": "Debug unit tests for a solution",
+            "program": "${workspaceFolder}/target/debug/deps/${fileBasenameNoExtension}.exe",
             "args": [],
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "rust: cargo test bin"
         }
     ]
 }

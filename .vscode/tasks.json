@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "rust: cargo build bin",
+            "type": "shell",
+            "command": "cargo",
+            "args": [
+                "build",
+                "--bin=${fileBasenameNoExtension}",
+                "--package=advent_of_code"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$rustc"
+            ]
+        },
+        {
+            "label": "rust: cargo test bin",
+            "type": "shell",
+            "command": "cargo",
+            "args": [
+                "test",
+                "--no-run",
+                "--bin=${fileBasenameNoExtension}",
+                "--package=advent_of_code"
+            ],
+            "group": "build",
+            "problemMatcher": [
+                "$rustc"
+            ]
+        }
+    ]
+}
