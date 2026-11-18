@@ -267,6 +267,7 @@ impl<T> Matrix<T> {
 }
 
 impl Matrix<MapCell> {
+    #[allow(clippy::needless_range_loop)]
     fn get_ball_and_bar_pos_x(&self) -> (usize, usize) {
         let mut ball_x = 0;
         let mut bar_x = 0;
@@ -285,7 +286,7 @@ impl Matrix<MapCell> {
         (ball_x, bar_x)
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::needless_range_loop)]
     fn print(&self) {
         for y in 0..self.size.y {
             for x in 0..self.size.x {
@@ -302,7 +303,7 @@ impl Matrix<MapCell> {
         }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::needless_range_loop)]
     fn print_to_string(&self) -> String {
         let mut result = "".to_string();
         for y in 0..self.size.y {
@@ -323,7 +324,7 @@ impl Matrix<MapCell> {
 }
 
 impl Matrix<bool> {
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::needless_range_loop)]
     fn print(&self) {
         for y in 0..self.size.y {
             for x in 0..self.size.x {

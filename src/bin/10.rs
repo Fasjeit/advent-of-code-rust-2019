@@ -342,7 +342,7 @@ impl SpaceMatrix<AsteroidMapCell> {
         self.size.x > index.x && self.size.y > index.y
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::needless_range_loop)]
     pub fn print(&self) {
         for y in 0..self.size.y {
             for x in 0..self.size.x {

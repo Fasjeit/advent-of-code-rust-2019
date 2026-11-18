@@ -496,7 +496,7 @@ impl<T> Matrix<T> {
 }
 
 impl Matrix<MapCell> {
-    #[allow(dead_code)]
+    #[allow(dead_code, clippy::needless_range_loop)]
     fn print(&self) {
         for y in 0..self.size.y {
             for x in 0..self.size.x {
