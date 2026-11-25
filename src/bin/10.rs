@@ -7,7 +7,7 @@ use itertools::Itertools;
 advent_of_code::solution!(10);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let (_, value) = find_best_position(input);
+    let (_, value) = find_best_position(input.trim_end());
     Some(value as u64)
 }
 
@@ -25,7 +25,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 }
 
 fn find_best_position(input: &str) -> (Index, u32) {
-    let (data, size) = parse_row_input_as_data_array_matrix::<char>(input);
+    let (data, size) = parse_row_input_as_data_array_matrix::<char>(input.trim_end());
     let data_cells: Vec<AsteroidMapCell> = data.into_iter().map(AsteroidMapCell::from).collect();
 
     let matrix = SpaceMatrix {

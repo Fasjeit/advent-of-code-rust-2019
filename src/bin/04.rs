@@ -1,7 +1,7 @@
 advent_of_code::solution!(4);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut splitted = input.split("-");
+    let mut splitted = input.trim_end().split("-");
     let from: u32 = splitted
         .next()
         .expect("Wrong input!")
@@ -32,7 +32,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let mut splitted = input.split("-");
+    let mut splitted = input.trim_end().split("-");
     let from: u32 = splitted
         .next()
         .expect("Wrong input!")

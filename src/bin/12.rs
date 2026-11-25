@@ -1,13 +1,13 @@
 advent_of_code::solution!(12);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    part_one_iter(input, 1000)
+    part_one_iter(input.trim_end(), 1000)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
     let mut moons = Vec::<Moon>::new();
 
-    for line in input.lines() {
+    for line in input.trim_end().lines() {
         let mut iter = line.split(',');
         let x: i64 = iter.next().unwrap()[3..].parse().unwrap();
         let y: i64 = iter.next().unwrap()[3..].parse().unwrap();

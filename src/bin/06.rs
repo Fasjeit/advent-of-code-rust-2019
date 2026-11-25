@@ -3,7 +3,7 @@ use std::collections::HashMap;
 advent_of_code::solution!(6);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let lines = input.lines();
+    let lines = input.trim_end().lines();
 
     let mut orbits = Orbits {
         nodes: HashMap::new(),
@@ -23,7 +23,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let lines = input.lines();
+    let lines = input.trim_end().lines();
 
     let mut orbits = Orbits {
         nodes: HashMap::new(),

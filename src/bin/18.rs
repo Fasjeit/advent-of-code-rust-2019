@@ -17,11 +17,11 @@ pub fn part_one(input: &str) -> Option<u64> {
     // Then create a new graph and traverse with Dijkstera respecting
     // closed doors and saving collected keys for a state we are in.
     // some ideas taken from https://www.reddit.com/r/adventofcode/comments/ec8090/comment/fhiwgh4
-    solve_part_1(input, 26)
+    solve_part_1(input.trim_end(), 26)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    solve_part_2(input, 26)
+    solve_part_2(input.trim_end(), 26)
 }
 
 pub fn solve_part_1(input: &str, target_key_count: usize) -> Option<u64> {

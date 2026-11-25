@@ -16,6 +16,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 
 pub fn solve(input: &str, part_two: bool) -> Option<u64> {
     let firmware: Vec<i64> = input
+        .trim_end()
         .split(",")
         .map(|i| i.parse().expect("Expected i64 list"))
         .collect();

@@ -6,7 +6,7 @@ use strum_macros::EnumIter;
 advent_of_code::solution!(11);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut robot = Robot::new(input, false);
+    let mut robot = Robot::new(input.trim_end(), false);
     loop {
         // let mut input = String::new();
         // stdin()
@@ -30,7 +30,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let mut robot = Robot::new(input, true);
+    let mut robot = Robot::new(input.trim_end(), true);
     loop {
         // let mut input = String::new();
         // stdin()

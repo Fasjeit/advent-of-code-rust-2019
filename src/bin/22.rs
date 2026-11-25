@@ -1,7 +1,7 @@
 advent_of_code::solution!(22);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    Some(solve_part_one(input, 2019, 10007))
+    Some(solve_part_one(input.trim_end(), 2019, 10007))
 }
 
 pub fn part_two(input: &str) -> Option<u64> {

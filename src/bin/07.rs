@@ -3,13 +3,13 @@ advent_of_code::solution!(7);
 use itertools::Itertools;
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut lines = input.lines();
+    let mut lines = input.trim_end().lines();
     let (firmware, phase_inputs) = (lines.next().unwrap(), lines.next().unwrap_or("0,1,2,3,4"));
     Some(create_amplifiers(firmware, phase_inputs) as u64)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let mut lines = input.lines();
+    let mut lines = input.trim_end().lines();
     let (firmware, phase_inputs) = (lines.next().unwrap(), lines.next().unwrap_or("9,8,7,6,5"));
     Some(create_amplifiers_part_2(firmware, phase_inputs) as u64)
 }

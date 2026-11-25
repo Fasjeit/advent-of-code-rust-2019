@@ -1,7 +1,7 @@
 advent_of_code::solution!(1);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let lines = input.lines();
+    let lines = input.trim_end().lines();
     let mut masses: Vec<u64> = Vec::new();
 
     lines.for_each(|l| masses.push(l.parse().expect("Expected u64")));
@@ -12,7 +12,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let lines = input.lines();
+    let lines = input.trim_end().lines();
     let mut masses: Vec<u64> = Vec::new();
 
     lines.for_each(|l| masses.push(l.parse().expect("Expected u64")));

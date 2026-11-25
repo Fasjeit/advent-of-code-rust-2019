@@ -8,6 +8,7 @@ advent_of_code::solution!(17);
 
 pub fn part_one(input: &str) -> Option<u64> {
     let firmware: Vec<i64> = input
+        .trim_end()
         .split(",")
         .map(|i| i.parse().expect("Expected i64 list"))
         .collect();
@@ -59,6 +60,7 @@ pub fn part_two(input: &str) -> Option<u64> {
     let no = "n\n";
 
     let mut firmware: Vec<i64> = input
+        .trim_end()
         .split(",")
         .map(|i| i.parse().expect("Expected i64 list"))
         .collect();

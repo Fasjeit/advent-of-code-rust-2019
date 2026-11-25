@@ -1,7 +1,7 @@
 advent_of_code::solution!(9);
 
 pub fn part_one(input: &str) -> Option<i64> {
-    let result = run_machine_with_extended_memory(input, "1");
+    let result = run_machine_with_extended_memory(input.trim_end(), "1");
     //dbg!(&result);
     Some(result.map(|(_, output)| output).unwrap()[0])
 }
@@ -14,6 +14,7 @@ pub fn part_two(input: &str) -> Option<i64> {
 
 pub fn run_machine_with_extended_memory(firmware: &str, input: &str) -> Option<(i64, Vec<i64>)> {
     let firmware: Vec<i64> = firmware
+        .trim_end()
         .split(",")
         .map(|i| i.parse().expect("Expected i64 list"))
         .collect();
@@ -162,7 +163,9 @@ impl Machine {
             ParameterMode::Relative => {
                 let expected_addr = parameter.value + self.relative_base;
                 if expected_addr < 0 {
-                    panic!("Unexpected memory address for relative parameter address [{expected_addr}]!");
+                    panic!(
+                        "Unexpected memory address for relative parameter address [{expected_addr}]!"
+                    );
                 }
                 let addr = expected_addr as usize;
                 if addr >= self.memory.len() {
@@ -187,7 +190,9 @@ impl Machine {
             ParameterMode::Relative => {
                 let expected_addr = parameter.value + self.relative_base;
                 if expected_addr < 0 {
-                    panic!("Unexpected memory address for relative parameter address [{expected_addr}]!");
+                    panic!(
+                        "Unexpected memory address for relative parameter address [{expected_addr}]!"
+                    );
                 }
                 let addr = expected_addr as usize;
                 if addr >= self.memory.len() {

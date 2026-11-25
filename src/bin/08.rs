@@ -5,7 +5,7 @@ use std::collections::HashMap;
 advent_of_code::solution!(8);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut lines = input.lines();
+    let mut lines = input.trim_end().lines();
     let (data, size_x_y) = (lines.next().unwrap(), lines.next().unwrap_or("25,6"));
 
     let splitted_size: Vec<u32> = size_x_y
@@ -54,7 +54,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let mut lines = input.lines();
+    let mut lines = input.trim_end().lines();
     let (data, size_x_y) = (lines.next().unwrap(), lines.next().unwrap_or("25,6"));
 
     let splitted_size: Vec<u32> = size_x_y

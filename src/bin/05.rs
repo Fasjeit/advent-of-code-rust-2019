@@ -1,12 +1,12 @@
 advent_of_code::solution!(5);
 
 pub fn part_one(input: &str) -> Option<i64> {
-    let output = run_machine(input, "1").unwrap().1;
+    let output = run_machine(input.trim_end(), "1").unwrap().1;
     Some(output[output.len() - 1])
 }
 
 pub fn part_two(input: &str) -> Option<i64> {
-    let output = run_machine(input, "5").unwrap().1;
+    let output = run_machine(input.trim_end(), "5").unwrap().1;
     Some(output[output.len() - 1])
 }
 

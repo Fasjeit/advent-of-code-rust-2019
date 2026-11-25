@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 advent_of_code::solution!(3);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let mut lines = input.lines();
+    let mut lines = input.trim_end().lines();
     let first = lines.next().unwrap();
     let second = lines.next().unwrap();
 
@@ -38,7 +38,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 pub fn part_two(input: &str) -> Option<u64> {
     // same as part 1 but with different cost computation.
 
-    let mut lines = input.lines();
+    let mut lines = input.trim_end().lines();
     let first = lines.next().unwrap();
     let second = lines.next().unwrap();
 

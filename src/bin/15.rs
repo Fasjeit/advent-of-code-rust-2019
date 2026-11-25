@@ -7,11 +7,11 @@ use std::str::FromStr;
 advent_of_code::solution!(15);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    solve(input, false)
+    solve(input.trim_end(), false)
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    solve(input, true)
+    solve(input.trim_end(), true)
 }
 
 fn solve(input: &str, part_two: bool) -> Option<u64> {

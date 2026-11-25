@@ -15,7 +15,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 
     let mut conventions = HashMap::new();
 
-    for line in input.lines() {
+    for line in input.trim_end().lines() {
         let mut splitted = line.split(" => ");
         let inputs_str = splitted.next();
         let individual_inputs_str = inputs_str.unwrap().split(", ");
@@ -45,7 +45,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 
     let mut conventions = HashMap::new();
 
-    for line in input.lines() {
+    for line in input.trim_end().lines() {
         let mut splitted = line.split(" => ");
         let inputs_str = splitted.next();
         let individual_inputs_str = inputs_str.unwrap().split(", ");

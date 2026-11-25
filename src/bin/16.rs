@@ -21,6 +21,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 pub fn fft(input: &str, pattern: &str, phase_count: u8) -> String {
     let pattern_digits: Vec<i32> = pattern.split(", ").map(|i| i.parse().unwrap()).collect();
     let input_digits: Vec<i32> = input
+        .trim_end()
         .chars()
         .map(|c| c.to_digit(10).unwrap() as i32)
         .collect();
@@ -71,6 +72,7 @@ pub fn hacky_fft(input: &str, phase_count: u8) -> String {
     // only works with fixed pattern, and large offsets
 
     let input_digits: Vec<i32> = input
+        .trim_end()
         .chars()
         .map(|c| c.to_digit(10).unwrap() as i32)
         .collect();

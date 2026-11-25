@@ -6,7 +6,7 @@ use std::str::FromStr;
 advent_of_code::solution!(13);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    let (_result, output) = run_machine_with_extended_memory(input, "").unwrap();
+    let (_result, output) = run_machine_with_extended_memory(input.trim_end(), "").unwrap();
 
     let mut cells: Vec<MapCell> = Vec::<MapCell>::new();
     for _i in 0..(38 * 38) {
@@ -62,6 +62,7 @@ pub fn part_two(input: &str) -> Option<u64> {
         data: cells,
     };
 
+    let input = input.trim_end();
     let firmware = &format!("2{}", &input[1..]);
 
     let firmware: Vec<i64> = firmware

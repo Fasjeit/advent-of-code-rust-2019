@@ -2,6 +2,7 @@ advent_of_code::solution!(2);
 
 pub fn part_one(input: &str) -> Option<u64> {
     let mut memory: Vec<u64> = input
+        .trim_end()
         .split(",")
         .map(|i| i.parse().expect("Expected u64 list"))
         .collect();
@@ -25,6 +26,7 @@ pub fn part_two(input: &str) -> Option<u64> {
 
 pub fn part_two_with_target(input: &str, target: u64) -> Option<u64> {
     let memory: Vec<u64> = input
+        .trim_end()
         .split(",")
         .map(|i| i.parse().expect("Expected u64 list"))
         .collect();
