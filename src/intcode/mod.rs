@@ -217,6 +217,26 @@ impl Machine {
         }
     }
 
+    pub fn execute_ascii_interactive(&mut self, input: &str) -> ExecuteResult {
+        // Do not rest input here!
+        //self.input_pointer = 0;
+
+        // need to sanitize command (to make sure it ends with \n)
+        if !input.is_empty() {
+            self.input
+                .extend(input.trim_end().chars().map(|c| c as i64));
+            self.input.push(10); // \n
+        }
+
+        self.output = Vec::new();
+        self.output_pointer = 0;
+        let result = self.execute();
+        let text = self.get_ascii_output();
+        println!("{text}");
+
+        result
+    }
+
     // execute until halt
     pub fn execute(&mut self) -> ExecuteResult {
         //self.print();
